@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { socket } from '../socket';
 import { IoSend } from "react-icons/io5";
+import Emoji from './Icons/Emoji';
+import Attachment from './Icons/Attachment';
 
 const CustomChatUI = () => {
     const userName = localStorage.getItem("userName");
@@ -8,10 +10,12 @@ const CustomChatUI = () => {
     const [inputValue, setInputValue] = useState('');
     const scrollRef = useRef(null);
 
-    // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
         if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
         }
     }, [messages]);
 
@@ -19,7 +23,7 @@ const CustomChatUI = () => {
         e.preventDefault();
         if (!inputValue.trim()) return;
 
-        socket.emit("sendMessage", inputValue);
+        socket.emit("sendMessage", { username: userName, message: inputValue });
         setInputValue("");
     };
 
@@ -32,74 +36,83 @@ const CustomChatUI = () => {
     }, []);
 
     return (
-        <div className="flex w-full font-sans">
-            <div className="flex flex-col w-full mx-auto backdrop-blur-xl border border-slate-300 rounded-xl overflow-hidden shadow-2xl">
-
-                {/* Custom Header */}
-                <header className="px-6 py-4 border-b border-slate-300 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        {/* <div className="h-12 w-12 rounded-2xl bg-linear-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            P
-                        </div> */}
+            <div className="flex flex-col w-full mx-auto bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl overflow-hidden shadow-xl">
+                
+                <header className="px-6 py-4 bg-white border-b border-slate-100 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                            <span className="font-bold text-lg">P</span>
+                        </div>
                         <div>
-                            <h2 className="text-lg font-semibold tracking-tight">Project Workspace</h2>
+                            <h2 className="text-slate-800 font-bold tracking-tight">Project Workspace</h2>
+                            <p className="text-[11px] text-emerald-500 font-medium flex items-center gap-1">
+                                <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                Active Now
+                            </p>
                         </div>
                     </div>
                 </header>
 
-                {/* Messages Area */}
                 <div
                     ref={scrollRef}
-                    className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide scroll-smooth"
+                    className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-200"
                 >
-                    {messages.length === 0 && (
-                        <div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
-                            <p className="text-sm italic">No messages yet. Start the conversation.</p>
+                    {messages.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                            <div className="bg-slate-100 p-4 rounded-full mb-3">
+                                <IoSend className="-rotate-45 opacity-20" size={30} />
+                            </div>
+                            <p className="text-sm font-medium">No messages yet</p>
+                            <p className="text-xs">Start the conversation below</p>
                         </div>
-                    )}
-
-                    {messages.map((msg, index) => {
-                        const isMe = msg.username === userName;
-                        return (
-                            <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                <div className="flex items-center gap-2 mb-1 px-1">
-                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tighter">
+                    ) : (
+                        messages.map((msg, index) => {
+                            const isMe = msg.username === userName;
+                            return (
+                                <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-2">
                                         {isMe ? 'You' : msg.username}
                                     </span>
-                                </div>
-                                <div
-                                    className={`relative px-4 py-3 rounded-xl max-w-[85%] md:max-w-[60%] text-sm leading-relaxed shadow-sm
-                                        ${isMe
-                                            ? 'bg-indigo-600 text-white rounded-tr-none'
-                                            : 'bg-gray-200 rounded-tl-none'
+                                    <div className={`px-4 py-2.5 rounded-2xl max-w-[80%] text-[14px] shadow-sm transition-all
+                                        ${isMe 
+                                            ? 'bg-indigo-600 text-white rounded-tr-none' 
+                                            : 'bg-white border border-slate-100 text-slate-700 rounded-tl-none'
                                         }`}
-                                >
-                                    {msg.message}
+                                    >
+                                        {msg.message}
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })
+                    )}
                 </div>
 
-                <footer className="p-4 border-t border-slate-300">
+                <footer className="p-4 bg-white border-t border-slate-100">
                     <form
                         onSubmit={handleSend}
-                        className="relative flex items-center border rounded-xl px-4 py-3 border-slate-300 focus-within:border-indigo-500 transition-all"
+                        className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 focus-within:ring-2 ring-indigo-100 focus-within:border-indigo-400 transition-all"
                     >
                         <input
                             type="text"
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            placeholder="Write a message..."
-                            className="flex-1 bg-transparent border-none outline-none text-sm placeholder-slate-500"
+                            placeholder="Message #workspace..."
+                            className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 py-2"
                         />
-                        <button>
-                            <IoSend size={20} className='hover:text-indigo-600' />
-                        </button>
+                        <div className='flex items-center gap-1 text-slate-900 font-black'>
+                            <Emoji />
+                            <Attachment />
+                            <button 
+                                type="submit"
+                                className={`p-2 rounded-lg  border-l border-slate-200 pl-3 transition-colors hover:text-indigo-700 ${inputValue.trim() ? 'text-slate-700' : 'text-slate-400 cursor-not-allowed'}`}
+                                disabled={!inputValue.trim()}
+                            >
+                                <IoSend size={18} />
+                            </button>
+                        </div>
                     </form>
                 </footer>
             </div>
-        </div>
     );
 };
 

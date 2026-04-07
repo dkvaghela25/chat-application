@@ -14,7 +14,7 @@ const UsersList = () => {
     console.log("userList........................", userList)
 
     return (
-        <div className="w-[25%] flex flex-col mx-auto backdrop-blur-xl border border-slate-300 rounded-xl overflow-hidden shadow-2xl">
+        <div className="w-[25%] flex flex-col mx-auto bg-white/80 backdrop-blur-xl border border-slate-300 rounded-xl overflow-hidden shadow-2xl">
             <header className="px-6 py-4 border-b border-slate-300">
                 <h2 className="text-xl font-semibold">Users List</h2>
             </header>
