@@ -2,10 +2,10 @@ import { useState } from "react";
 import { socket } from "../../socket";
 import Attachment from "../Icons/Attachment";
 import Emoji from "../Icons/Emoji"
-import { IoDocumentTextOutline, IoSend } from "react-icons/io5";
-import { MdOutlineAudiotrack } from "react-icons/md";
-import { CiImageOn, CiVideoOn } from "react-icons/ci";
+import { IoSend } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
+import { getIcon } from "../../utils/getIcon";
+import { FaCode } from "react-icons/fa6";
 
 const Footer = () => {
 
@@ -14,23 +14,22 @@ const Footer = () => {
         attachments: []
     });
 
+    const handleTextChange = (e) => {
+        setInputValue(prev => ({ ...prev, text: e.target.value }))
+        e.target.style.height = 'auto';
+        e.target.style.height = `${e.target.scrollHeight}px`;
+    }
+
     const handleSend = (e) => {
         e.preventDefault();
-        if (!inputValue.text.trim()) return;
+        if (!inputValue?.text?.trim() && inputValue.attachments.length === 0) return;
 
-        socket.emit("sendMessage", inputValue);
+        socket.emit("sendMessage", {
+            text: inputValue.text,
+            attachments: inputValue.attachments.map(({ type, name, size }) => ({ type, name, size }))
+        });
+
         setInputValue({ text: "", attachments: [] });
-    };
-
-    const getIcon = (type) => {
-
-        switch (type) {
-            case "image": return < CiImageOn size={24} />;
-            case "video": return < CiVideoOn size={24} />;
-            case "audio": return < MdOutlineAudiotrack size={24} />;
-            default: return < IoDocumentTextOutline size={24} />;
-        }
-
     };
 
     const handleRemoveAttachment = (index) => {
@@ -81,15 +80,18 @@ const Footer = () => {
                             ))}
                         </div>
                     )}
-                    <div className='flex'>
-                        <input
+                    <div className='flex items-end'>
+                        <textarea
                             type="text"
                             value={inputValue.text}
-                            onChange={(e) => setInputValue(prev => ({ ...prev, text: e.target.value }))}
+                            onChange={handleTextChange}
                             placeholder="Message #workspace..."
-                            className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 py-2"
-                        />
+                            className="flex-1 bg-transparent border-none resize-none [&::-webkit-scrollbar]:w-1.5 h-9 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2"
+                        ></textarea>
                         <div className='flex items-center gap-1 text-slate-900 font-black'>
+                            <button className='p-2 rounded-full transition-all duration-200 hover:bg-slate-200' >
+                                <FaCode size={18} />
+                            </button>
                             <Emoji setInputValue={setInputValue} />
                             <Attachment setInputValue={setInputValue} />
                             <button
@@ -102,7 +104,7 @@ const Footer = () => {
                         </div>
                     </div>
                 </form>
-            </footer>
+            </footer >
         </>
     );
 };

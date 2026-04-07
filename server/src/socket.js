@@ -1,54 +1,94 @@
 import { Server } from "socket.io";
-import { addUser, removeUser, getUser, getAllUsers, users } from "./users.js";
+import User from "./models/User.js";
+import Message from "./models/Message.js";
 
 export const initSocket = (server) => {
 
     const io = new Server(server, {
         cors: {
             origin: "*",
-        }
+            methods: ["GET", "POST"],
+        },
     });
 
     io.on("connection", (socket) => {
         console.log("✅ User connected:", socket.id);
 
-        // Join event
-        socket.on("join", (username) => {
-            addUser(socket.id, username);
+        // JOIN
+        socket.on("join", async (username) => {
+            try {
+                // Save/update user
+                await User.findOneAndUpdate(
+                    { username },
+                    { socketId: socket.id, online: true },
+                    { upsert: true, new: true }
+                );
 
-            console.log(`${username} joined`);
+                // ✅ SEND OLD MESSAGES
+                const messages = await Message.find()
+                    .sort({ createdAt: 1 })
+                    .limit(50);
 
-            io.emit("userList", users);
+                socket.emit("oldMessages", messages);
+
+                // Send updated users
+                const users = await User.find();
+                io.emit("userList", users);
+
+            } catch (err) {
+                console.error("Join Error:", err.message);
+            }
         });
 
-        // Message event
-        socket.on("sendMessage", (message) => {
-            const username = getUser(socket.id);
+        // SEND MESSAGE
+        socket.on("sendMessage", async (payload) => {
+            try {
+                console.log("Incoming payload:", payload);
 
-            const data = {
-                username,
-                message,
-                time: new Date()
-            };
+                const user = await User.findOne({ socketId: socket.id });
+                if (!user) {
+                    console.log("❌ User not found");
+                    return;
+                }
 
-            io.emit("receiveMessage", data);
+                const { text = "", attachments = [] } = payload;
+
+                // validation
+                if (!text && attachments.length === 0) {
+                    console.log("❌ Empty message");
+                    return;
+                }
+
+                // ✅ SAVE MESSAGE
+                const message = await Message.create({
+                    username: user.username,
+                    text,
+                    attachments,
+                });
+
+                console.log("✅ Saved message:", message);
+
+                io.emit("receiveMessage", message);
+
+            } catch (err) {
+                console.error("🔥 Message Error:", err);
+            }
         });
 
-        // Typing event (optional)
-        socket.on("typing", () => {
-            const username = getUser(socket.id);
-            socket.broadcast.emit("typing", username);
-        });
+        // DISCONNECT
+        socket.on("disconnect", async () => {
+            try {
+                await User.findOneAndUpdate(
+                    { socketId: socket.id },
+                    { online: false }
+                );
 
-        // Disconnect
-        socket.on("disconnect", () => {
-            const username = getUser(socket.id);
+                const users = await User.find({ online: true });
+                io.emit("userList", users);
 
-            console.log("❌ User disconnected:", username);
-
-            removeUser(socket.id);
-
-            io.emit("userList", Object.values(getAllUsers()));
+            } catch (err) {
+                console.error("Disconnect Error:", err.message);
+            }
         });
     });
 };

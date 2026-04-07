@@ -13,7 +13,7 @@ const App = () => {
 
 
   return (
-    <div className="flex p-5 gap-5 bg-gray-100 min-h-screen">
+    <div className="flex p-5 gap-5 bg-gray-100 h-screen">
       <UsersList />
       <CustomChatUI />
     </div>

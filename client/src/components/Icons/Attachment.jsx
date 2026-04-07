@@ -40,7 +40,7 @@ const Attachment = ({ setInputValue }) => {
                     <div className="absolute bottom-full right-0 mb-3 z-20 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-2xl p-3 grid grid-cols-2 gap-2 min-w-40 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-200 ease-out origin-bottom-right">
 
                         {attachmentIcons.map(({ icon, accept, bgColor, color, label }) => (
-                            <AttachmentOption handleChange={handleChange} icon={icon} label={label} accept={accept} color={color} bgColor={bgColor} />
+                            <AttachmentOption key={label} handleChange={handleChange} icon={icon} label={label} accept={accept} color={color} bgColor={bgColor} />
                         ))}
 
                         <div className="absolute -bottom-1.5 right-4 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45"></div>
