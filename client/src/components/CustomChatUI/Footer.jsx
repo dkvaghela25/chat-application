@@ -6,9 +6,11 @@ import { IoSend } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
 import { getIcon } from "../../utils/getIcon";
 import { FaCode } from "react-icons/fa6";
+import CodeEditor from "./CodeEditor";
 
 const Footer = () => {
 
+    const [isCodeEditorMode, setIsCodeEditorMode] = useState(false)
     const [inputValue, setInputValue] = useState({
         text: "",
         attachments: []
@@ -38,7 +40,7 @@ const Footer = () => {
             attachments: prev.attachments.filter((_, i) => i !== index)
         }))
     }
-
+    
     return (
         <>
             <footer className="p-4 bg-white border-t border-slate-100">
@@ -81,15 +83,18 @@ const Footer = () => {
                         </div>
                     )}
                     <div className='flex items-end'>
-                        <textarea
-                            type="text"
-                            value={inputValue.text}
-                            onChange={handleTextChange}
-                            placeholder="Message #workspace..."
-                            className="flex-1 bg-transparent border-none resize-none [&::-webkit-scrollbar]:w-1.5 h-9 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2"
-                        ></textarea>
+                        {isCodeEditorMode
+                            ? <CodeEditor text={inputValue.text} setInputValue={setInputValue} setIsCodeEditorMode={setIsCodeEditorMode} />
+                            : <textarea
+                                type="text"
+                                value={inputValue.text}
+                                onChange={handleTextChange}
+                                placeholder="Message #workspace..."
+                                className="flex-1 bg-transparent border-none resize-none [&::-webkit-scrollbar]:w-1.5 h-9 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2"
+                            ></textarea>
+                        }
                         <div className='flex items-center gap-1 text-slate-900 font-black'>
-                            <button className='p-2 rounded-full transition-all duration-200 hover:bg-slate-200' >
+                            <button onClick={() => setIsCodeEditorMode(prev => !prev)} className='p-2 rounded-full transition-all duration-200 hover:bg-slate-200' >
                                 <FaCode size={18} />
                             </button>
                             <Emoji setInputValue={setInputValue} />
