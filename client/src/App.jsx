@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { socket } from "./socket";
-import CustomChatUI from "./components/CustomChatUI";
 import UsersList from "./components/UsersList";
+import CustomChatUI from "./components/CustomChatUI/CustomChatUI";
 
 const App = () => {
 
