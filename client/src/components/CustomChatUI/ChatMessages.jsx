@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { socket } from "../../socket";
+import { connectAndJoin, socket } from "../../socket";
 import { IoSend } from "react-icons/io5";
 import { getIcon } from "../../utils/getIcon";
 import CodeEditor from "./CodeEditor";
@@ -18,8 +18,22 @@ const ChatMessages = () => {
 
     useEffect(() => {
 
+        const handleConnect = () => {
+            connectAndJoin(userName);
+        };
+
+        socket.on("connect", handleConnect);
+        connectAndJoin(userName);
+
+        return () => {
+            socket.off("connect", handleConnect);
+        };
+    }, [userName]);
+
+    useEffect(() => {
+
         const oldMessageCallback = (data) => {
-            setMessages(prev => [...prev, ...data]);
+            setMessages(data);
         };
 
         const receiveMessageCallback = (data) => {
@@ -36,9 +50,9 @@ const ChatMessages = () => {
         socket.on("isTyping", typingCallBack);
 
         return () => {
-            socket.off("oldMessages")
-            socket.off("receiveMessage")
-            socket.off("isTyping")
+            socket.off("oldMessages", oldMessageCallback)
+            socket.off("receiveMessage", receiveMessageCallback)
+            socket.off("isTyping", typingCallBack)
         };
 
     }, []);

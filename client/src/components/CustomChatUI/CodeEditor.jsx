@@ -6,6 +6,11 @@ import { MdOutlineContentCopy } from "react-icons/md";
 
 const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCodeEditorMode }) => {
     const [availableLanguage, setAvailableLanguage] = useState([]);
+    const lineHeight = 20;
+    const maxVisibleLines = 15;
+    const codeLineCount = Math.max(1, (monaco_editor.code || "").split("\n").length);
+    const visibleLineCount = Math.min(codeLineCount, maxVisibleLines);
+    const editorHeight = visibleLineCount * lineHeight + 20;
 
     function handleEditorDidMount(editor, monaco) {
         const allLanguages = monaco.languages.getLanguages();
@@ -81,8 +86,8 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
 
                 <div className="pt-2 bg-white">
                     <Editor
-                        width="50vw"
-                        height="35vh"
+                        width="100%"
+                        height={`${editorHeight}px`}
                         theme="vs"
                         language={monaco_editor.language}
                         value={monaco_editor.code}
@@ -91,6 +96,7 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
                         options={{
                             readOnly: previewMode,
                             fontSize: 14,
+                            lineHeight,
                             fontFamily: "'Fira Code', 'Cascadia Code', monospace",
                             lineNumbers: "on",
                             minimap: { enabled: false },

@@ -1,8 +1,24 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { connectAndJoin } from '../socket';
 
 const LoginPage = () => {
 
     const [userName, setUserName] = useState("")
+    const navigate = useNavigate();
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const trimmedUserName = userName.trim();
+        if (!trimmedUserName) return;
+
+        localStorage.setItem("userName", trimmedUserName);
+
+        connectAndJoin(trimmedUserName);
+
+        navigate("/");
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -14,7 +30,7 @@ const LoginPage = () => {
                     <p className="text-slate-500 mt-2">Enter your name to start new chat</p>
                 </div>
 
-                <form className="px-8 pb-10 space-y-5" onSubmit={(e) => localStorage.setItem("userName", userName)}>
+                <form className="px-8 pb-10 space-y-5" onSubmit={handleSubmit}>
                     <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">
                             Name

@@ -106,9 +106,9 @@ const Footer = () => {
                             ))}
                         </div>
                     )}
-                    <div className='flex items-end'>
+                    <div className='flex flex-wrap items-end gap-2'>
 
-                        <div className="flex-1 flex flex-col w-full">
+                        <div className="flex-1 min-w-0 flex flex-col">
 
                             <textarea
                                 onKeyDown={handleKeyDown}
@@ -123,7 +123,7 @@ const Footer = () => {
 
                         </div>
 
-                        <div className='flex items-center gap-1 text-slate-900 font-black'>
+                        <div className='ml-auto flex shrink-0 items-center gap-1 text-slate-900 font-black'>
                             <button type="button" onClick={() => setIsCodeEditorMode(prev => !prev)} className='p-2 rounded-full transition-all duration-200 hover:bg-slate-200' >
                                 <FaCode size={18} />
                             </button>

@@ -9,7 +9,7 @@ const UsersList = () => {
         const callback = (data) => setUserList(data);
         socket.on("userList", callback);
         return () => socket.off("userList", callback)
-    })
+    }, [])
 
     console.log("userList........................", userList)
 

@@ -1,6 +1,4 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { useEffect } from "react";
-import { socket } from "./socket";
 import ChatMessages from "./pages/ChatMessages";
 import ProtectedRoutes from "./routes/ProtectedRoutes";
 import PublicRoutes from "./routes/PublicRoutes";
@@ -24,13 +22,6 @@ const App = () => {
       }]
     },
   ])
-
-  const userName = localStorage.getItem("userName");
-
-  useEffect(() => {
-    socket.emit("join", userName);
-  }, [])
-
 
   return (
     <RouterProvider router={router} />
