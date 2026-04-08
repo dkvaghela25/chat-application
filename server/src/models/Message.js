@@ -15,7 +15,7 @@ const messageSchema = new mongoose.Schema(
     attachments: [
       {
         type: {
-          type: String, // "image", "video", "file"
+          type: String, 
         },
         name: {
           type: String,
@@ -29,6 +29,15 @@ const messageSchema = new mongoose.Schema(
         }
       }
     ],
+
+    monaco_editor: {
+      language: {
+        type: String, 
+      },
+      code: {
+        type: String,
+      },
+    },
 
     room: {
       type: String,

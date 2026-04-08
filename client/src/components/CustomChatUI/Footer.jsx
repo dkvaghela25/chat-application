@@ -10,11 +10,16 @@ import CodeEditor from "./CodeEditor";
 
 const Footer = () => {
 
-    const [isCodeEditorMode, setIsCodeEditorMode] = useState(false)
-    const [inputValue, setInputValue] = useState({
+    const initialInputValues = {
         text: "",
-        attachments: []
-    });
+        attachments: [],
+        monaco_editor: {
+            language: "plaintext",
+            code: ""
+        }
+    }
+    const [isCodeEditorMode, setIsCodeEditorMode] = useState(false)
+    const [inputValue, setInputValue] = useState(initialInputValues);
 
     const handleTextChange = (e) => {
         setInputValue(prev => ({ ...prev, text: e.target.value }))
@@ -23,16 +28,31 @@ const Footer = () => {
     }
 
     const handleSend = (e) => {
-        e.preventDefault();
-        if (!inputValue?.text?.trim() && inputValue.attachments.length === 0) return;
+        e?.preventDefault();
+        const { text, attachments, monaco_editor } = inputValue;
+        if (!text?.trim() && !monaco_editor.code?.trim() && attachments.length === 0) return;
 
         socket.emit("sendMessage", {
-            text: inputValue.text,
-            attachments: inputValue.attachments.map(({ type, name, size }) => ({ type, name, size }))
+            text,
+            attachments: inputValue.attachments.map(({ type, name, size }) => ({ type, name, size })),
+            monaco_editor
         });
 
-        setInputValue({ text: "", attachments: [] });
+        setInputValue(initialInputValues);
+        setIsCodeEditorMode(false);
     };
+
+    const handleKeyDown = (e) => {
+
+        if (e.key === "`" && inputValue.text.slice(-2) === "``") {
+            setIsCodeEditorMode(true)
+        }
+
+        if (e.key == "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend()
+        };
+    }
 
     const handleRemoveAttachment = (index) => {
         setInputValue(prev => ({
@@ -40,10 +60,12 @@ const Footer = () => {
             attachments: prev.attachments.filter((_, i) => i !== index)
         }))
     }
-    
+
     return (
         <>
-            <footer className="p-4 bg-white border-t border-slate-100">
+            <footer
+                className="p-4 bg-white border-t border-slate-100"
+            >
                 <form
                     onSubmit={handleSend}
                     className="flex flex-col bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 focus-within:ring-2 ring-indigo-100 focus-within:border-indigo-400 transition-all"
@@ -83,18 +105,24 @@ const Footer = () => {
                         </div>
                     )}
                     <div className='flex items-end'>
-                        {isCodeEditorMode
-                            ? <CodeEditor text={inputValue.text} setInputValue={setInputValue} setIsCodeEditorMode={setIsCodeEditorMode} />
-                            : <textarea
+
+                        <div className="flex-1 flex flex-col w-full">
+
+                            <textarea
+                                onKeyDown={handleKeyDown}
                                 type="text"
                                 value={inputValue.text}
                                 onChange={handleTextChange}
                                 placeholder="Message #workspace..."
-                                className="flex-1 bg-transparent border-none resize-none [&::-webkit-scrollbar]:w-1.5 h-9 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2"
+                                className="bg-transparent resize-none [&::-webkit-scrollbar]:w-1.5 h-9 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2"
                             ></textarea>
-                        }
+
+                            {isCodeEditorMode && <CodeEditor monaco_editor={inputValue.monaco_editor} setInputValue={setInputValue} setIsCodeEditorMode={setIsCodeEditorMode} />}
+
+                        </div>
+
                         <div className='flex items-center gap-1 text-slate-900 font-black'>
-                            <button onClick={() => setIsCodeEditorMode(prev => !prev)} className='p-2 rounded-full transition-all duration-200 hover:bg-slate-200' >
+                            <button type="button" onClick={() => setIsCodeEditorMode(prev => !prev)} className='p-2 rounded-full transition-all duration-200 hover:bg-slate-200' >
                                 <FaCode size={18} />
                             </button>
                             <Emoji setInputValue={setInputValue} />
@@ -102,7 +130,7 @@ const Footer = () => {
                             <button
                                 type="submit"
                                 className={`p-2 rounded-lg  border-l disabled:cursor-not-allowed disabled:text-slate-400 border-slate-200 pl-3 transition-colors text-slate-700 hover:text-indigo-700`}
-                                disabled={!inputValue?.text?.trim() && inputValue.attachments.length === 0}
+                                disabled={!inputValue?.text?.trim() && !inputValue?.monaco_editor?.code?.trim() && inputValue.attachments.length === 0}
                             >
                                 <IoSend size={18} />
                             </button>

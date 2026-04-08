@@ -1,9 +1,29 @@
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useEffect } from "react";
 import { socket } from "./socket";
-import UsersList from "./components/UsersList";
-import CustomChatUI from "./components/CustomChatUI/CustomChatUI";
+import ChatMessages from "./pages/ChatMessages";
+import ProtectedRoutes from "./routes/ProtectedRoutes";
+import PublicRoutes from "./routes/PublicRoutes";
+import LoginPage from "./pages/LoginPage";
 
 const App = () => {
+
+  const router = createBrowserRouter([
+    {
+      element: <PublicRoutes />,
+      children: [{
+        path: "/login",
+        element: <LoginPage />
+      }]
+    },
+    {
+      element: <ProtectedRoutes />,
+      children: [{
+        path: "/",
+        element: <ChatMessages />
+      }]
+    },
+  ])
 
   const userName = localStorage.getItem("userName");
 
@@ -13,10 +33,7 @@ const App = () => {
 
 
   return (
-    <div className="flex p-5 gap-5 bg-gray-100 h-screen">
-      <UsersList />
-      <CustomChatUI />
-    </div>
+    <RouterProvider router={router} />
   );
 };
 

@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { socket } from "../../socket";
 import { IoSend } from "react-icons/io5";
 import { getIcon } from "../../utils/getIcon";
+import CodeEditor from "./CodeEditor";
 
 const ChatMessages = () => {
 
+    const messagesEndRef = useRef(null);
     const userName = localStorage.getItem("userName");
     const [messages, setMessages] = useState([]);
+
+    useEffect(() => {
+        if (!messagesEndRef.current) return;
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
     useEffect(() => {
 
@@ -50,7 +57,7 @@ const ChatMessages = () => {
                                 <div className={`px-4 py-2.5 rounded-2xl max-w-[80%] text-[14px] shadow-sm transition-all
                                         ${isMe
                                         ? 'bg-indigo-600 text-white rounded-tr-none'
-                                        : 'bg-white border border-slate-100 text-slate-700 rounded-tl-none'
+                                        : 'bg-slate-300/30 border border-slate-100 text-slate-700 rounded-tl-none'
                                     }`}
                                 >
                                     {msg.attachments.length !== 0 && (
@@ -79,12 +86,17 @@ const ChatMessages = () => {
                                             ))}
                                         </div>
                                     )}
-                                    {msg.text}
+
+                                    {msg.monaco_editor.code && (
+                                        <CodeEditor previewMode={true} monaco_editor={msg.monaco_editor} />
+                                    )}
+                                    <pre>{msg.text}</pre>
                                 </div>
                             </div>
                         );
                     })
                 )}
+                <div ref={messagesEndRef} />
             </div>
         </>
     );

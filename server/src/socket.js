@@ -51,10 +51,10 @@ export const initSocket = (server) => {
                     return;
                 }
 
-                const { text = "", attachments = [] } = payload;
+                const { text = "", attachments = [], monaco_editor = { language: "plaintext", code: "" } } = payload;
 
                 // validation
-                if (!text && attachments.length === 0) {
+                if (!text && attachments.length === 0 && !monaco_editor.code) {
                     console.log("❌ Empty message");
                     return;
                 }
@@ -64,6 +64,7 @@ export const initSocket = (server) => {
                     username: user.username,
                     text,
                     attachments,
+                    monaco_editor
                 });
 
                 console.log("✅ Saved message:", message);
