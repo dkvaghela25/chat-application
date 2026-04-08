@@ -96,7 +96,7 @@ const ChatMessages = () => {
                         );
                     })
                 )}
-                <div ref={messagesEndRef} />
+                {messages.length !== 0 && <div ref={messagesEndRef} className="h-0" />}
             </div>
         </>
     );
