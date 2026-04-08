@@ -9,11 +9,12 @@ const ChatMessages = () => {
     const messagesEndRef = useRef(null);
     const userName = localStorage.getItem("userName");
     const [messages, setMessages] = useState([]);
+    const [isTyping, setIsTyping] = useState({})
 
     useEffect(() => {
         if (!messagesEndRef.current) return;
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+    }, [messages, isTyping]);
 
     useEffect(() => {
 
@@ -23,21 +24,30 @@ const ChatMessages = () => {
 
         const receiveMessageCallback = (data) => {
             setMessages(prev => [...prev, data]);
+            setIsTyping(false);
         };
+
+        const typingCallBack = (data) => {
+            setIsTyping(data);
+        }
 
         socket.on("oldMessages", oldMessageCallback);
         socket.on("receiveMessage", receiveMessageCallback);
+        socket.on("isTyping", typingCallBack);
 
         return () => {
             socket.off("oldMessages")
             socket.off("receiveMessage")
+            socket.off("isTyping")
         };
 
     }, []);
 
+    console.log("isTyping...........................", isTyping);
+
     return (
         <>
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-400 ">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 ">
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-slate-400">
                         <div className="bg-slate-100 p-4 rounded-full mb-3">
@@ -50,52 +60,63 @@ const ChatMessages = () => {
                     messages.map((msg, index) => {
                         const isMe = msg.username === userName;
                         return (
-                            <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-2">
-                                    {isMe ? 'You' : msg.username}
-                                </span>
-                                <div className={`px-4 py-2.5 rounded-2xl max-w-[80%] text-[14px] shadow-sm transition-all
+                            <>
+                                <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-2">
+                                        {isMe ? 'You' : msg.username}
+                                    </span>
+                                    <div className={`px-4 py-2.5 rounded-2xl max-w-[80%]  shadow-sm transition-all
                                         ${isMe
-                                        ? 'bg-indigo-600 text-white rounded-tr-none'
-                                        : 'bg-slate-300/30 border border-slate-100 text-slate-700 rounded-tl-none'
-                                    }`}
-                                >
-                                    {msg.attachments.length !== 0 && (
-                                        <div className="flex flex-wrap gap-2 my-2">
-                                            {msg.attachments.map((attachment, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="flex w-70 items-center bg-white border border-slate-200 rounded-lg p-1.5 pr-1 group animate-in fade-in zoom-in-95 duration-200"
-                                                >
-                                                    <div className="bg-indigo-600/20 p-2 rounded-md shadow-sm text-indigo-700 mr-2">
-                                                        {getIcon(attachment.type.split("/")[0])}
-                                                    </div>
+                                            ? 'bg-indigo-600 text-white rounded-tr-none'
+                                            : 'bg-slate-300/30 border border-slate-100 text-slate-700 rounded-tl-none'
+                                        }`}
+                                    >
+                                        {msg?.attachments?.length !== 0 && (
+                                            <div className="flex flex-wrap gap-2 my-2">
+                                                {msg.attachments?.map((attachment, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex w-70 items-center bg-white border border-slate-200 rounded-lg p-2 pr-1 group animate-in fade-in zoom-in-95 duration-200"
+                                                    >
+                                                        <div className="bg-indigo-600/20 p-2 rounded-md shadow-sm text-indigo-700 mr-2">
+                                                            {getIcon(attachment.type.split("/")[0])}
+                                                        </div>
 
-                                                    <div className="flex flex-col max-w-[70%]  mr-2">
-                                                        <span className="text-sm font-semibold text-slate-700 truncate ">
-                                                            {attachment.name}
-                                                        </span>
-                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
-                                                            {attachment.size > 1024 * 1024
-                                                                ? `${(attachment.size / (1024 * 1024)).toFixed(2)} MB`
-                                                                : `${Math.ceil(attachment.size / 1024)} KB`
-                                                            }
-                                                        </span>
+                                                        <div className="flex flex-col max-w-[70%]  mr-2">
+                                                            <span className="text-sm font-semibold text-slate-700 truncate ">
+                                                                {attachment.name}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                                                                {attachment.size > 1024 * 1024
+                                                                    ? `${(attachment.size / (1024 * 1024)).toFixed(2)} MB`
+                                                                    : `${Math.ceil(attachment.size / 1024)} KB`
+                                                                }
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                                ))}
+                                            </div>
+                                        )}
 
-                                    {msg.monaco_editor.code && (
-                                        <CodeEditor previewMode={true} monaco_editor={msg.monaco_editor} />
-                                    )}
-                                    <pre>{msg.text}</pre>
+                                        {msg?.monaco_editor?.code && (
+                                            <CodeEditor previewMode={true} monaco_editor={msg.monaco_editor} />
+                                        )}
+                                        <pre>{msg.text}</pre>
+                                    </div>
                                 </div>
-                            </div>
+                            </>
                         );
                     })
                 )}
+
+                {(isTyping.bool && isTyping.username !== userName) && (
+                    <div className="p-4 w-fit flex gap-1 bg-slate-100 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm">
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot"></div>
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot animation-delay-200"></div>
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot animation-delay-400"></div>
+                    </div>
+                )}
+
                 {messages.length !== 0 && <div ref={messagesEndRef} className="h-0" />}
             </div>
         </>

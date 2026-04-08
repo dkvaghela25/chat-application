@@ -67,6 +67,8 @@ const Footer = () => {
                 className="p-4 bg-white border-t border-slate-100"
             >
                 <form
+                    onFocus={() => socket.emit("isTyping", true)}
+                    onBlur={() => socket.emit("isTyping", false)}
                     onSubmit={handleSend}
                     className="flex flex-col bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 focus-within:ring-2 ring-indigo-100 focus-within:border-indigo-400 transition-all"
                 >

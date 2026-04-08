@@ -40,6 +40,23 @@ export const initSocket = (server) => {
             }
         });
 
+        socket.on("isTyping", async (bool) => {
+
+            const user = await User.findOne({ socketId: socket.id });
+            if (!user) {
+                console.log("❌ User not found");
+                return;
+            }
+
+            const message = {
+                username: user.username,
+                bool,
+            };
+
+            io.emit("isTyping", message);
+
+        });
+
         // SEND MESSAGE
         socket.on("sendMessage", async (payload) => {
             try {
