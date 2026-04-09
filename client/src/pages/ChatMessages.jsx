@@ -5,12 +5,12 @@ import { connectAndJoin } from "../socket";
 
 const ChatMessages = () => {
 
-    const userName = localStorage.getItem("userName");
+    const username = localStorage.getItem("username");
     const [receiver, setReceiver] = useState(null);
 
     useEffect(() => {
-        connectAndJoin(userName);
-    }, [userName]);
+        connectAndJoin(username);
+    }, [username]);
 
     return (
         <div className="flex p-5 gap-5 bg-gray-100 h-screen">

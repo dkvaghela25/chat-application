@@ -7,7 +7,7 @@ import CodeEditor from "./CodeEditor";
 const ChatMessages = ({ receiver }) => {
 
     const messagesEndRef = useRef(null);
-    const userName = localStorage.getItem("userName");
+    const username = localStorage.getItem("username");
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState({})
 
@@ -17,7 +17,7 @@ const ChatMessages = ({ receiver }) => {
     }, [messages, isTyping]);
 
     useEffect(() => {
-        socket.emit("getMessages", { senderUserName: userName, receiverUserName: receiver.username })
+        socket.emit("getMessages", { senderUserName: username, receiverUserName: receiver.username })
     }, [receiver])
 
     console.log("receiver....................................", receiver)
@@ -31,8 +31,8 @@ const ChatMessages = ({ receiver }) => {
         const receiveMessageCallback = (data) => {
             setMessages(prev => {
                 if (
-                    (data.sender === receiver.username && data.receiver === userName) ||
-                    (data.sender === userName && data.receiver === receiver.username)
+                    (data.sender === receiver.username && data.receiver === username) ||
+                    (data.sender === username && data.receiver === receiver.username)
                 ) {
                     return [...prev, data];
                 }
@@ -57,7 +57,7 @@ const ChatMessages = ({ receiver }) => {
             socket.off("isTyping", typingCallBack);
         };
 
-    }, [receiver.username, userName]);
+    }, [receiver.username, username]);
 
     return (
         <>
@@ -72,7 +72,7 @@ const ChatMessages = ({ receiver }) => {
                     </div>
                 ) : (
                     messages.map((msg, index) => {
-                        const isMe = msg.sender === userName;
+                        const isMe = msg.sender === username;
                         return (
                             <>
                                 <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
@@ -123,7 +123,7 @@ const ChatMessages = ({ receiver }) => {
                     })
                 )}
 
-                {(isTyping.bool && isTyping.username === receiver.username && isTyping.username !== userName && messages.length !== 0) && (
+                {(isTyping.bool && isTyping.username === receiver.username && isTyping.username !== username && messages.length !== 0) && (
                     <div className="p-4 w-fit flex gap-1 bg-slate-100 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm">
                         <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot"></div>
                         <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot animation-delay-200"></div>

@@ -3,7 +3,7 @@ import { socket } from "../socket";
 
 const UsersList = ({ setReceiver }) => {
     const [userList, setUserList] = useState([]);
-    const userName = localStorage.getItem("userName")
+    const username = localStorage.getItem("username")
 
     useEffect(() => {
         const callback = (data) => setUserList(data);
@@ -40,7 +40,7 @@ const UsersList = ({ setReceiver }) => {
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-[14px] font-semibold text-slate-700 truncate group-hover:text-indigo-600 transition-colors">
-                                    {user.username} {user.username === userName && <span>(You)</span>}
+                                    {user.username} {user.username === username && <span>(You)</span>}
                                 </h3>
                             </div>
                             <p className="text-[11px] text-slate-400 font-medium truncate">

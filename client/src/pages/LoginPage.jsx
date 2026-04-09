@@ -13,7 +13,7 @@ const LoginPage = () => {
         const trimmedUserName = userName.trim();
         if (!trimmedUserName) return;
 
-        localStorage.setItem("userName", trimmedUserName);
+        localStorage.setItem("username", trimmedUserName);
 
         connectAndJoin(trimmedUserName);
 

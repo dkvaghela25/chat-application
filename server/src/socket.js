@@ -112,7 +112,7 @@ export const initSocket = (server) => {
                     { online: false }
                 );
 
-                const users = await User.find({ online: true });
+                const users = await User.find();
                 io.emit("userList", users);
 
             } catch (err) {

@@ -1,9 +1,9 @@
 import { Outlet, Navigate } from "react-router-dom";
 
 const PublicRoutes = () => {
-    const userName  = localStorage.getItem("userName");
+    const username  = localStorage.getItem("username");
 
-    if (userName) {
+    if (username) {
         return <Navigate to="/" replace />;
     }
 
