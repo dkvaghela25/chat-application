@@ -7,24 +7,51 @@ import { IoMdClose } from "react-icons/io";
 import { getIcon } from "../../utils/getIcon";
 import { FaCode } from "react-icons/fa6";
 import CodeEditor from "./CodeEditor";
+import { useRef } from "react";
 
-const Footer = () => {
+const Footer = ({ receiver }) => {
+
+    const typingTimeoutRef = useRef(null);
+    const isTypingRef = useRef(false);
 
     const initialInputValues = {
         text: "",
         attachments: [],
         monaco_editor: {
             language: "plaintext",
-            code: ""
+            code: "",
         }
     }
+
     const [isCodeEditorMode, setIsCodeEditorMode] = useState(false)
     const [inputValue, setInputValue] = useState(initialInputValues);
 
     const handleTextChange = (e) => {
+
         setInputValue(prev => ({ ...prev, text: e.target.value }))
         e.target.style.height = 'auto';
         e.target.style.height = `${e.target.scrollHeight}px`;
+
+        if (!isTypingRef.current) {
+            socket.emit("isTyping", {
+                receiver: receiver.username,
+                bool: true
+            });
+            isTypingRef.current = true;
+        }
+
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            socket.emit("isTyping", {
+                receiver: receiver.username,
+                bool: false
+            });
+            isTypingRef.current = false;
+        }, 1500);
+
     }
 
     const handleSend = (e) => {
@@ -35,7 +62,8 @@ const Footer = () => {
         socket.emit("sendMessage", {
             text,
             attachments: inputValue.attachments.map(({ type, name, size }) => ({ type, name, size })),
-            monaco_editor
+            monaco_editor,
+            receiver: receiver.username
         });
 
         setInputValue(initialInputValues);
@@ -67,10 +95,8 @@ const Footer = () => {
                 className="p-4 bg-white border-t border-slate-100"
             >
                 <form
-                    onFocus={() => socket.emit("isTyping", true)}
-                    onBlur={() => socket.emit("isTyping", false)}
                     onSubmit={handleSend}
-                    className="flex flex-col bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 focus-within:ring-2 ring-indigo-100 focus-within:border-indigo-400 transition-all"
+                    className="flex flex-col bg-slate-50 border border-slate-200 rounded-md px-4 py-2 focus-within:ring-2 ring-indigo-100 focus-within:border-indigo-400 transition-all"
                 >
                     {inputValue.attachments.length !== 0 && (
                         <div className="flex flex-wrap gap-2 my-2">

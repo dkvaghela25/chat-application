@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { connectAndJoin, socket } from "../../socket";
+import { socket } from "../../socket";
 import { IoSend } from "react-icons/io5";
 import { getIcon } from "../../utils/getIcon";
 import CodeEditor from "./CodeEditor";
 
-const ChatMessages = () => {
+const ChatMessages = ({ receiver }) => {
 
     const messagesEndRef = useRef(null);
     const userName = localStorage.getItem("userName");
@@ -17,52 +17,52 @@ const ChatMessages = () => {
     }, [messages, isTyping]);
 
     useEffect(() => {
+        socket.emit("getMessages", { senderUserName: userName, receiverUserName: receiver.username })
+    }, [receiver])
 
-        const handleConnect = () => {
-            connectAndJoin(userName);
-        };
-
-        socket.on("connect", handleConnect);
-        connectAndJoin(userName);
-
-        return () => {
-            socket.off("connect", handleConnect);
-        };
-    }, [userName]);
+    console.log("receiver....................................", receiver)
 
     useEffect(() => {
 
-        const oldMessageCallback = (data) => {
+        const chatHistoryCallback = (data) => {
             setMessages(data);
         };
 
         const receiveMessageCallback = (data) => {
-            setMessages(prev => [...prev, data]);
+            setMessages(prev => {
+                if (
+                    (data.sender === receiver.username && data.receiver === userName) ||
+                    (data.sender === userName && data.receiver === receiver.username)
+                ) {
+                    return [...prev, data];
+                }
+                return prev;
+            });
             setIsTyping(false);
         };
 
         const typingCallBack = (data) => {
-            setIsTyping(data);
-        }
+            if (data.username === receiver.username) {
+                setIsTyping(data);
+            }
+        };
 
-        socket.on("oldMessages", oldMessageCallback);
+        socket.on("chatHistory", chatHistoryCallback);
         socket.on("receiveMessage", receiveMessageCallback);
         socket.on("isTyping", typingCallBack);
 
         return () => {
-            socket.off("oldMessages", oldMessageCallback)
-            socket.off("receiveMessage", receiveMessageCallback)
-            socket.off("isTyping", typingCallBack)
+            socket.off("chatHistory", chatHistoryCallback);
+            socket.off("receiveMessage", receiveMessageCallback);
+            socket.off("isTyping", typingCallBack);
         };
 
-    }, []);
-
-    console.log("isTyping...........................", isTyping);
+    }, [receiver.username, userName]);
 
     return (
         <>
             <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 ">
-                {messages.length === 0 ? (
+                {messages?.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-slate-400">
                         <div className="bg-slate-100 p-4 rounded-full mb-3">
                             <IoSend className="-rotate-45 opacity-20" size={30} />
@@ -72,7 +72,7 @@ const ChatMessages = () => {
                     </div>
                 ) : (
                     messages.map((msg, index) => {
-                        const isMe = msg.username === userName;
+                        const isMe = msg.sender === userName;
                         return (
                             <>
                                 <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
@@ -123,7 +123,7 @@ const ChatMessages = () => {
                     })
                 )}
 
-                {(isTyping.bool && isTyping.username !== userName) && (
+                {(isTyping.bool && isTyping.username === receiver.username && isTyping.username !== userName && messages.length !== 0) && (
                     <div className="p-4 w-fit flex gap-1 bg-slate-100 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm">
                         <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot"></div>
                         <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot animation-delay-200"></div>

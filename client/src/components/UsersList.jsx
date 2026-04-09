@@ -1,23 +1,56 @@
 import { useEffect, useState } from "react";
 import { socket } from "../socket";
 
-const UsersList = () => {
-
+const UsersList = ({ setReceiver }) => {
     const [userList, setUserList] = useState([]);
+    const userName = localStorage.getItem("userName")
 
     useEffect(() => {
         const callback = (data) => setUserList(data);
         socket.on("userList", callback);
-        return () => socket.off("userList", callback)
-    }, [])
-
-    console.log("userList........................", userList)
+        return () => socket.off("userList", callback);
+    }, []);
 
     return (
-        <div className="w-[25%] flex flex-col mx-auto bg-white/80 backdrop-blur-xl border border-slate-300 rounded-xl overflow-hidden shadow-2xl">
-            <header className="px-6 py-4 border-b border-slate-300">
-                <h2 className="text-xl font-semibold">Users List</h2>
+        <div className="w-[30%] hidden md:flex flex-col bg-white border-r border-slate-200 h-full overflow-hidden">
+            <header className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <h2 className="text-lg font-bold text-slate-800 tracking-tight">Team</h2>
+                    <p className="text-[11px] text-slate-400 font-medium uppercase tracking-widest">
+                        {userList.length} Members
+                    </p>
+                </div>
             </header>
+
+            <div className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-slate-200">
+                {userList.map((user) => (
+                    <div
+                        key={user._id}
+                        onClick={() => setReceiver(user)}
+                        className="group flex items-center gap-3 px-4 py-3 mx-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-all duration-200"
+                    >
+                        <div className="relative">
+                            <img className="rounded-full w-12 h-12" src={`https://ui-avatars.com/api/?name=${user.username}&background=random`} alt="" />
+
+                            <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white 
+                                ${user.online ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                            />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-[14px] font-semibold text-slate-700 truncate group-hover:text-indigo-600 transition-colors">
+                                    {user.username} {user.username === userName && <span>(You)</span>}
+                                </h3>
+                            </div>
+                            <p className="text-[11px] text-slate-400 font-medium truncate">
+                                {user.online ? 'Active now' : 'Offline'}
+                            </p>
+                        </div>
+
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

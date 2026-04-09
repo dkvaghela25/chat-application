@@ -2,7 +2,13 @@ import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
-    username: {
+
+    sender: {
+      type: String,
+      required: true,
+    },
+
+    receiver: {
       type: String,
       required: true,
     },
@@ -15,7 +21,7 @@ const messageSchema = new mongoose.Schema(
     attachments: [
       {
         type: {
-          type: String, 
+          type: String,
         },
         name: {
           type: String,
@@ -32,16 +38,11 @@ const messageSchema = new mongoose.Schema(
 
     monaco_editor: {
       language: {
-        type: String, 
+        type: String,
       },
       code: {
         type: String,
       },
-    },
-
-    room: {
-      type: String,
-      default: "global",
     },
   },
   { timestamps: true }

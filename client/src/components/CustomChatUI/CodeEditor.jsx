@@ -3,6 +3,7 @@ import { useState } from "react";
 import { FaCode } from "react-icons/fa6";
 import { IoMdClose } from "react-icons/io";
 import { MdOutlineContentCopy } from "react-icons/md";
+import { socket } from "../../socket";
 
 const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCodeEditorMode }) => {
     const [availableLanguage, setAvailableLanguage] = useState([]);
@@ -42,6 +43,12 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
                 }
             }
         ))
+
+        socket.emit("isTyping", true);
+
+        setTimeout(() => {
+            socket.emit("isTyping", false);
+        }, 2000);
     }
 
     return (
@@ -49,10 +56,10 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
             <div className="overflow-hidden rounded-xl border border-slate-200 shadow-2xl shadow-indigo-100/50 bg-white">
 
                 <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                    <div className="flex items-center gap-1 text-slate-500 hover:text-indigo-600 transition-colors">
+                    <div className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors">
                         <FaCode />
                         <select
-                            className="bg-transparent text-xs w-30 font-bold capitalize tracking-wider outline-none cursor-pointer"
+                            className={` ${previewMode ?  "appearance-none" : ""} bg-transparent text-xs w-30 font-bold capitalize tracking-wider outline-none cursor-pointer`}
                             value={monaco_editor.language}
                             onChange={handleLanguageChange}
                             disabled={previewMode}
@@ -84,7 +91,7 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
                     </div>
                 </div>
 
-                <div className="pt-2 bg-white">
+                <div className={`pt-2 bg-white ${ previewMode ? "w-[50vw]" : "w-full"}`}>
                     <Editor
                         width="100%"
                         height={`${editorHeight}px`}

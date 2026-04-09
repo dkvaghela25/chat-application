@@ -14,7 +14,6 @@ export const initSocket = (server) => {
     io.on("connection", (socket) => {
         console.log("✅ User connected:", socket.id);
 
-        // JOIN
         socket.on("join", async (username) => {
             try {
                 // Save/update user
@@ -23,13 +22,6 @@ export const initSocket = (server) => {
                     { socketId: socket.id, online: true },
                     { upsert: true, new: true }
                 );
-
-                // ✅ SEND OLD MESSAGES
-                const messages = await Message.find()
-                    .sort({ createdAt: 1 })
-                    .limit(50);
-
-                socket.emit("oldMessages", messages);
 
                 // Send updated users
                 const users = await User.find();
@@ -40,60 +32,79 @@ export const initSocket = (server) => {
             }
         });
 
-        socket.on("isTyping", async (bool) => {
-
+        socket.on("isTyping", async ({ receiver, bool }) => {
             const user = await User.findOne({ socketId: socket.id });
-            if (!user) {
-                console.log("❌ User not found");
-                return;
-            }
+            if (!user) return;
 
-            const message = {
+            const receiverUser = await User.findOne({ username: receiver });
+            if (!receiverUser?.socketId) return;
+
+            io.to(receiverUser.socketId).emit("isTyping", {
                 username: user.username,
                 bool,
-            };
-
-            io.emit("isTyping", message);
-
+            });
         });
 
-        // SEND MESSAGE
         socket.on("sendMessage", async (payload) => {
             try {
-                console.log("Incoming payload:", payload);
+                const sender = await User.findOne({ socketId: socket.id });
+                if (!sender) return;
 
-                const user = await User.findOne({ socketId: socket.id });
-                if (!user) {
-                    console.log("❌ User not found");
+                const {
+                    receiver,
+                    text = "",
+                    attachments = [],
+                    monaco_editor = { language: "plaintext", code: "" }
+                } = payload;
+
+                if (!receiver) {
+                    console.log("❌ No receiver");
                     return;
                 }
 
-                const { text = "", attachments = [], monaco_editor = { language: "plaintext", code: "" } } = payload;
+                // 🔍 Find receiver
+                const receiverUser = await User.findOne({ username: receiver });
 
-                // validation
-                if (!text && attachments.length === 0 && !monaco_editor.code) {
-                    console.log("❌ Empty message");
+                if (!receiverUser || !receiverUser.socketId) {
+                    console.log("❌ Receiver not online");
                     return;
                 }
 
-                // ✅ SAVE MESSAGE
+                // 💾 Save message
                 const message = await Message.create({
-                    username: user.username,
+                    sender: sender.username,
+                    receiver,
                     text,
                     attachments,
                     monaco_editor
                 });
 
-                console.log("✅ Saved message:", message);
+                // ✅ send to receiver ONLY
+                if (receiverUser?.socketId) {
+                    io.to(receiverUser.socketId).emit("receiveMessage", message);
+                }
 
-                io.emit("receiveMessage", message);
+                if(receiver !== sender.username ){
+                    socket.emit("receiveMessage", message);
+                }
 
             } catch (err) {
-                console.error("🔥 Message Error:", err);
+                console.error("Send Message Error:", err.message);
             }
         });
 
-        // DISCONNECT
+        socket.on("getMessages", async ({ senderUserName, receiverUserName }) => {
+
+            const messages = await Message.find({
+                $or: [
+                    { sender: senderUserName, receiver: receiverUserName },
+                    { sender: receiverUserName, receiver: senderUserName },
+                ]
+            }).sort({ createdAt: 1 });
+
+            socket.emit("chatHistory", messages);
+        });
+
         socket.on("disconnect", async () => {
             try {
                 await User.findOneAndUpdate(
@@ -108,5 +119,6 @@ export const initSocket = (server) => {
                 console.error("Disconnect Error:", err.message);
             }
         });
+
     });
 };
