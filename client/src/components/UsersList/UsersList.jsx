@@ -1,20 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { socket } from "../../socket";
-import { searchUser } from "../../api/user";
+// import { socket } from "../../socket";
+import { connectedUsers, searchUser } from "../../api/user";
 import DisplayUsers from "./DisplayUsers";
 import { IoMdSearch } from "react-icons/io";
 
 const UsersList = ({ setReceiver }) => {
 
+    const username = localStorage.getItem("username")
     const searchResultsRef = useRef(null);
     const [searchInput, setSearchInput] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [userList, setUserList] = useState([]);
 
+    const fetchConnectedUsers = async () => {
+        const res = await connectedUsers(username);
+
+        if (res.success) {
+            setUserList(res.users)
+        }
+
+    }
+
     useEffect(() => {
-        const callback = (data) => setUserList(data);
-        socket.on("userList", callback);
-        return () => socket.off("userList", callback);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchConnectedUsers();
     }, []);
 
     useEffect(() => {

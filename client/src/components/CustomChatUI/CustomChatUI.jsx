@@ -4,6 +4,7 @@ import Footer from './Footer';
 import NothingHere from './NothingHere';
 
 const CustomChatUI = ({ receiver }) => {
+    
     return (
         <>
             {!receiver

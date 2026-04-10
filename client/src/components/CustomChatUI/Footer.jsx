@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { socket } from "../../socket";
 import Attachment from "../Icons/Attachment";
 import Emoji from "../Icons/Emoji"
@@ -25,6 +25,13 @@ const Footer = ({ receiver }) => {
 
     const [isCodeEditorMode, setIsCodeEditorMode] = useState(false)
     const [inputValue, setInputValue] = useState(initialInputValues);
+    const [roomId, setRoomId] = useState("");
+
+    useEffect(() => {
+        const callback = (newRoomId) => setRoomId(newRoomId)
+        socket.on("roomJoined", callback);
+        return () => socket.off("roomJoined", callback)
+    }, [])
 
     const handleTextChange = (e) => {
 
@@ -60,10 +67,10 @@ const Footer = ({ receiver }) => {
         if (!text?.trim() && !monaco_editor.code?.trim() && attachments.length === 0) return;
 
         socket.emit("sendMessage", {
+            roomId,
             text,
             attachments: inputValue.attachments.map(({ type, name, size }) => ({ type, name, size })),
             monaco_editor,
-            receiver: receiver.username
         });
 
         setInputValue(initialInputValues);

@@ -20,8 +20,6 @@ const ChatMessages = ({ receiver }) => {
         socket.emit("getMessages", { senderUserName: username, receiverUserName: receiver.username })
     }, [receiver])
 
-    console.log("receiver....................................", receiver)
-
     useEffect(() => {
 
         const chatHistoryCallback = (data) => {

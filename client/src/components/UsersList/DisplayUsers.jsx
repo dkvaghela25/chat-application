@@ -1,13 +1,19 @@
+import { socket } from "../../socket";
+
 const DisplayUsers = ({ userList, setReceiver }) => {
-    
+
     const username = localStorage.getItem("username")
+    const handleClick = (user) => {
+        socket.emit("joinRoom", { receiver: user.username })
+        setReceiver(user)
+    }
 
     return (
         <div className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-slate-200">
             {userList.map((user) => (
                 <div
                     key={user._id}
-                    onClick={() => setReceiver(user)}
+                    onClick={() => handleClick(user)}
                     className="group flex items-center gap-3 px-4 py-3 mx-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-all duration-200"
                 >
                     <div className="relative">
@@ -21,7 +27,7 @@ const DisplayUsers = ({ userList, setReceiver }) => {
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                             <h3 className="text-[14px] font-semibold text-slate-700 truncate group-hover:text-indigo-600 transition-colors">
-                                {user.username} {user.username === username && <span>(You)</span>}
+                                {user.name} {user.username === username && <span>(You)</span>}
                             </h3>
                         </div>
                         <p className="text-[11px] text-slate-400 font-medium truncate">

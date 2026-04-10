@@ -35,6 +35,32 @@ export const initSocket = (server) => {
             }
         });
 
+        socket.on("joinRoom", async ({ receiver }) => {
+            try {
+
+                const sender = socket.username;
+
+                const roomId = [sender, receiver].sort().join("_");
+
+                let room = await Room.findOne({ roomId });
+
+                if (!room) {
+                    room = await Room.create({
+                        roomId,
+                        members: [sender, receiver],
+                        isGroup: false,
+                    });
+                }
+
+                socket.join(roomId);
+
+                socket.emit("roomJoined", roomId);
+
+            } catch (err) {
+                console.error("Join Room Error:", err.message);
+            }
+        });
+
         socket.on("isTyping", async ({ receiver, bool }) => {
             const user = await User.findOne({ socketId: socket.id });
             if (!user) return;
@@ -50,62 +76,58 @@ export const initSocket = (server) => {
 
         socket.on("sendMessage", async (payload) => {
             try {
-                const sender = await User.findOne({ socketId: socket.id });
-                if (!sender) return;
 
-                const {
+                const { roomId, text = "", attachments = [], monaco_editor } = payload
+                console.log("payload.........................................", payload)
+
+                if (!roomId) return;
+
+                const room = await Room.findOne({ roomId });
+                if (!room) return;
+
+                const sender = socket.username;
+                const receiver = roomId === `${sender}_${sender}` ? sender : room.members.find(m => m !== sender);
+
+                console.log("message.....................................", {
+                    sender,
                     receiver,
-                    text = "",
-                    attachments = [],
-                    monaco_editor = { language: "plaintext", code: "" }
-                } = payload;
+                    text,
+                    attachments,
+                    monaco_editor
+                })
 
-                if (!receiver) {
-                    console.log("❌ No receiver");
-                    return;
-                }
-
-                // 🔍 Find receiver
-                const receiverUser = await User.findOne({ username: receiver });
-
-                if (!receiverUser || !receiverUser.socketId) {
-                    console.log("❌ Receiver not online");
-                    return;
-                }
-
-                // 💾 Save message
                 const message = await Message.create({
-                    sender: sender.username,
+                    sender,
                     receiver,
                     text,
                     attachments,
                     monaco_editor
                 });
 
-                // ✅ send to receiver ONLY
-                if (receiverUser?.socketId) {
-                    io.to(receiverUser.socketId).emit("receiveMessage", message);
-                }
-
-                if (receiver !== sender.username) {
-                    socket.emit("receiveMessage", message);
-                }
+                io.to(roomId).emit("receiveMessage", message);
 
             } catch (err) {
                 console.error("Send Message Error:", err.message);
             }
         });
 
-        socket.on("getMessages", async ({ senderUserName, receiverUserName }) => {
+        socket.on("getMessages", async ({ roomId }) => {
+            try {
+                const room = await Room.findOne({ roomId });
+                if (!room) return;
 
-            const messages = await Message.find({
-                $or: [
-                    { sender: senderUserName, receiver: receiverUserName },
-                    { sender: receiverUserName, receiver: senderUserName },
-                ]
-            }).sort({ createdAt: 1 });
+                const messages = await Message.find({
+                    $or: [
+                        { sender: room.members[0], receiver: room.members[1] },
+                        { sender: room.members[1], receiver: room.members[0] },
+                    ]
+                }).sort({ createdAt: 1 });
 
-            socket.emit("chatHistory", messages);
+                socket.emit("chatHistory", messages);
+
+            } catch (err) {
+                console.error("Get Messages Error:", err.message);
+            }
         });
 
         socket.on("disconnect", async () => {
