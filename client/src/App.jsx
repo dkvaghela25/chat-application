@@ -3,16 +3,23 @@ import ChatMessages from "./pages/ChatMessages";
 import ProtectedRoutes from "./routes/ProtectedRoutes";
 import PublicRoutes from "./routes/PublicRoutes";
 import LoginPage from "./pages/LoginPage";
+import RegistrationPage from "./pages/RegistrationPage";
 
 const App = () => {
 
   const router = createBrowserRouter([
     {
       element: <PublicRoutes />,
-      children: [{
-        path: "/login",
-        element: <LoginPage />
-      }]
+      children: [
+        {
+          path: "/login",
+          element: <LoginPage />
+        },
+        {
+          path: "/register",
+          element: <RegistrationPage />
+        },
+      ]
     },
     {
       element: <ProtectedRoutes />,

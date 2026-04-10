@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { initSocket } from "./socket.js";
 import { PORT } from "./config.js";
 import { connectDB } from "./db.js";
+import apiRouter from "./api/index.js";
 
 dotenv.config();
 
@@ -21,8 +22,10 @@ app.get("/", (req, res) => {
 const server = http.createServer(app);
 
 // Socket init
-initSocket(server); 
+initSocket(server);
+
+app.use('/api', apiRouter);
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port http://localhost:${PORT}`);
 });
