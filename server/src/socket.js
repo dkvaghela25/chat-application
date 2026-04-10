@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import User from "./models/User.js";
 import Message from "./models/Message.js";
+import Room from "./models/Room.js";
 
 export const initSocket = (server) => {
 
@@ -23,8 +24,10 @@ export const initSocket = (server) => {
                     { upsert: true, new: true }
                 );
 
+                socket.username = username;
+
                 // Send updated users
-                const users = await User.find();
+                const users = await User.find({ username });
                 io.emit("userList", users);
 
             } catch (err) {
@@ -84,7 +87,7 @@ export const initSocket = (server) => {
                     io.to(receiverUser.socketId).emit("receiveMessage", message);
                 }
 
-                if(receiver !== sender.username ){
+                if (receiver !== sender.username) {
                     socket.emit("receiveMessage", message);
                 }
 
@@ -121,5 +124,5 @@ export const initSocket = (server) => {
         });
 
     });
-    
+
 };

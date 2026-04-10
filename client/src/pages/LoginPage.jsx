@@ -47,6 +47,7 @@ const RegistrationPage = () => {
         const res = await loginUser(formData)
 
         if (res.success) {
+            localStorage.setItem("username", res.username);
             navigate("/")
         }
 

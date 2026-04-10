@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import CustomChatUI from "../components/CustomChatUI/CustomChatUI";
-import UsersList from "../components/UsersList";
 import { connectAndJoin } from "../socket";
+import UsersList from "../components/UsersList/UsersList";
 
 const ChatMessages = () => {
 
