@@ -1,13 +1,12 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { io } from "socket.io-client";
-import { fetchUserDetails } from "../api/user";
 
 const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
     const username = localStorage.getItem("username");
     const [roomId, setRoomId] = useState();
-    const [receiver, setReceiver] = useState({});
+    const [activeChat, setActiveChat] = useState(null);
 
     const socket = useMemo(() => io(import.meta.env.VITE_SOCKET_URL, {
         autoConnect: false,
@@ -16,8 +15,14 @@ export const SocketContextProvider = ({ children }) => {
     useEffect(() => {
         if (!username) return;
 
-        const onRoomJoined = (newRoomId) => {   
-            setRoomId(newRoomId);
+        const onRoomJoined = (roomData) => {
+            if (typeof roomData === "string") {
+                setRoomId(roomData);
+                return;
+            }
+
+            setRoomId(roomData?.roomId);
+            setActiveChat(roomData || null);
         };
 
         socket.on("roomJoined", onRoomJoined);
@@ -32,27 +37,12 @@ export const SocketContextProvider = ({ children }) => {
         };
     }, [socket, username]);
 
-    useEffect(() => {
-        const getUserDetails = async () => {
-            if (!roomId) return;
-            const receiverUsername = roomId.split("_").find(u => u !== username);
-            try {
-                const res = await fetchUserDetails(receiverUsername || username);
-                setReceiver(res.userDetails);
-            } catch (err) {
-                console.error("Error fetching user details:", err);
-            }
-        };
-
-        getUserDetails();
-    }, [roomId, username]);
-
     const value = {
         username,
         socket,
         roomId,
         setRoomId,
-        receiver
+        activeChat,
     };
 
     return (

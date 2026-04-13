@@ -54,7 +54,7 @@ const GroupModal = ({ setIsGroupModalOpen }) => {
         if (!validateForm()) return;
 
         setLoading(true);
-        socket.emit("joinRoom", formData)
+        socket.emit("createGroup", formData);
         setLoading(false);
         setIsGroupModalOpen(false);
     };

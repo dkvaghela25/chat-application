@@ -6,7 +6,7 @@ import { useSocketContext } from "../../contexts/socketContext";
 
 const ChatMessages = () => {
 
-    const { socket, receiver, username, roomId } = useSocketContext();
+    const { socket, activeChat, username, roomId } = useSocketContext();
 
     const messagesEndRef = useRef(null);
     const [messages, setMessages] = useState([]);
@@ -18,8 +18,9 @@ const ChatMessages = () => {
     }, [messages, isTyping]);
 
     useEffect(() => {
-        socket.emit("getMessages", { roomId })
-    }, [receiver])
+        if (!socket || !roomId) return;
+        socket.emit("getMessages", { roomId });
+    }, [socket, roomId]);
 
     useEffect(() => {
 
@@ -53,7 +54,7 @@ const ChatMessages = () => {
             socket.off("isTyping", typingCallBack);
         };
 
-    }, [receiver.username, username]);
+    }, [socket, roomId]);
 
     return (
         <>
@@ -70,9 +71,9 @@ const ChatMessages = () => {
                     messages.map((msg, index) => {
                         const isMe = msg.sender === username;
                         return (
-                            <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                            <div key={msg._id || `${msg.sender}-${msg.createdAt}-${index}`} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-2">
-                                    {isMe ? 'You' : receiver.name}
+                                    {isMe ? 'You' : activeChat?.isGroup ? msg.sender : activeChat?.name}
                                 </span>
                                 <div className={`px-4 py-2.5 rounded-2xl max-w-[80%]  shadow-sm transition-all
                                         ${isMe
@@ -118,10 +119,17 @@ const ChatMessages = () => {
                 )}
 
                 {(isTyping.bool && isTyping.roomId === roomId && isTyping.sender !== username && messages.length !== 0) && (
-                    <div className="p-4 w-fit flex gap-1 bg-slate-100 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm">
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot"></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot animation-delay-200"></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot animation-delay-400"></div>
+                    <div className="w-fit">
+                        {activeChat?.isGroup && (
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-2">
+                                {isTyping.sender}
+                            </p>
+                        )}
+                        <div className="p-4 w-fit flex gap-1 bg-slate-100 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm">
+                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot"></div>
+                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot animation-delay-200"></div>
+                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-dot animation-delay-400"></div>
+                        </div>
                     </div>
                 )}
 
