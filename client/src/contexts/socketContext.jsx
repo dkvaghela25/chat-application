@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { io } from "socket.io-client";
 import { fetchUserDetails } from "../api/user";
 
@@ -16,7 +16,7 @@ export const SocketContextProvider = ({ children }) => {
     useEffect(() => {
         if (!username) return;
 
-        const onRoomJoined = (newRoomId) => {
+        const onRoomJoined = (newRoomId) => {   
             setRoomId(newRoomId);
         };
 
@@ -47,17 +47,9 @@ export const SocketContextProvider = ({ children }) => {
         getUserDetails();
     }, [roomId, username]);
 
-    const connectAndJoin = useCallback((user) => {
-        if (!socket.connected) {
-            socket.connect();
-        }
-        socket.emit("join", user);
-    }, [socket]);
-
     const value = {
         username,
         socket,
-        connectAndJoin,
         roomId,
         setRoomId,
         receiver
