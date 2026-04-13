@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import CustomChatUI from "../components/CustomChatUI/CustomChatUI";
-import { connectAndJoin } from "../socket";
 import UsersList from "../components/UsersList/UsersList";
+import { useSocketContext } from "../contexts/socketContext";
 
 const ChatMessages = () => {
 
-    const username = localStorage.getItem("username");
-    const [receiver, setReceiver] = useState(null);
+    const { connectAndJoin, username } = useSocketContext();
 
     useEffect(() => {
         connectAndJoin(username);
@@ -14,8 +13,8 @@ const ChatMessages = () => {
 
     return (
         <div className="flex p-5 gap-5 bg-gray-100 h-screen">
-            <UsersList setReceiver={setReceiver} />
-            <CustomChatUI receiver={receiver} />
+            <UsersList />
+            <CustomChatUI />
         </div>
     );
 };

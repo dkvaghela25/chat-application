@@ -47,3 +47,22 @@ export const connectedUsers = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+export const userDetails = async (req, res) => {
+    try {
+
+        const { username } = req.params;
+
+        const userDetails = await User.findOne({ username });
+
+        res.status(200).json({
+            success: true,
+            message: "Users fetched successfully",
+            userDetails
+        });
+        
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

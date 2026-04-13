@@ -3,9 +3,16 @@ import { useState } from "react";
 import { FaCode } from "react-icons/fa6";
 import { IoMdClose } from "react-icons/io";
 import { MdOutlineContentCopy } from "react-icons/md";
-import { socket } from "../../socket";
+import { useSocketContext } from "../../contexts/socketContext";
+import { useRef } from "react";
 
 const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCodeEditorMode }) => {
+
+    const { socket, roomId, username } = useSocketContext();
+    const typingTimeoutRef = useRef(null);
+    const isTypingRef = useRef(false);
+
+
     const [availableLanguage, setAvailableLanguage] = useState([]);
     const lineHeight = 20;
     const maxVisibleLines = 15;
@@ -44,11 +51,27 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
             }
         ))
 
-        socket.emit("isTyping", true);
+        if (!isTypingRef.current) {
+            socket.emit("isTyping", {
+                sender: username,
+                roomId,
+                bool: true
+            });
+            isTypingRef.current = true;
+        }
 
-        setTimeout(() => {
-            socket.emit("isTyping", false);
-        }, 2000);
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            socket.emit("isTyping", {
+                sender: username,
+                roomId,
+                bool: false
+            });
+            isTypingRef.current = false;
+        }, 1500);
     }
 
     return (
@@ -59,7 +82,7 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
                     <div className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors">
                         <FaCode />
                         <select
-                            className={` ${previewMode ?  "appearance-none" : ""} bg-transparent text-xs w-30 font-bold capitalize tracking-wider outline-none cursor-pointer`}
+                            className={` ${previewMode ? "appearance-none" : ""} bg-transparent text-xs w-30 font-bold capitalize tracking-wider outline-none cursor-pointer`}
                             value={monaco_editor.language}
                             onChange={handleLanguageChange}
                             disabled={previewMode}
@@ -91,7 +114,7 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
                     </div>
                 </div>
 
-                <div className={`pt-2 bg-white ${ previewMode ? "w-[50vw]" : "w-full"}`}>
+                <div className={`pt-2 bg-white ${previewMode ? "w-[50vw]" : "w-full"}`}>
                     <Editor
                         width="100%"
                         height={`${editorHeight}px`}

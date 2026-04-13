@@ -1,30 +1,32 @@
 import { useEffect, useRef, useState } from "react";
-// import { socket } from "../../socket";
-import { connectedUsers, searchUser } from "../../api/user";
+import { searchUser } from "../../api/user";
 import DisplayUsers from "./DisplayUsers";
 import { IoMdSearch } from "react-icons/io";
+import { useSocketContext } from "../../contexts/socketContext";
 
-const UsersList = ({ setReceiver }) => {
+const UsersList = () => {
 
-    const username = localStorage.getItem("username")
+    const { socket } = useSocketContext();
     const searchResultsRef = useRef(null);
     const [searchInput, setSearchInput] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [userList, setUserList] = useState([]);
 
-    const fetchConnectedUsers = async () => {
-        const res = await connectedUsers(username);
+    // const fetchConnectedUsers = async () => {
+    //     const res = await connectedUsers(username);
 
-        if (res.success) {
-            setUserList(res.users)
-        }
+    //     if (res.success) {
+    //         setUserList(res.users)
+    //     }
 
-    }
+    // }
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchConnectedUsers();
-    }, []);
+        if(!socket) return;
+        const callback = (data) => setUserList(data);
+        socket.on("userList", callback);
+        return () => socket.off("userList", callback)
+    }, [socket]);
 
     useEffect(() => {
         const handler = setTimeout(async () => {
@@ -58,7 +60,7 @@ const UsersList = ({ setReceiver }) => {
                         Team
                     </h2>
                     <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
-                        {userList.length} Online
+                        {userList.filter(user => user.online).length} Online
                     </span>
                 </div>
 
@@ -80,7 +82,7 @@ const UsersList = ({ setReceiver }) => {
                                     Search Results
                                 </p>
                                 {searchResults.length > 0 ? (
-                                    <DisplayUsers userList={searchResults} setReceiver={setReceiver} />
+                                    <DisplayUsers userList={searchResults} setSearchResults={setSearchResults} setSearchInput={setSearchInput} />
                                 ) : (
                                     <p className="px-6 py-4 text-sm text-slate-500 italic">No members found.</p>
                                 )}
@@ -94,7 +96,7 @@ const UsersList = ({ setReceiver }) => {
                 <p className="px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                     Recent Conversations
                 </p>
-                <DisplayUsers userList={userList} setReceiver={setReceiver} />
+                <DisplayUsers userList={userList} />
             </div>
         </aside>
     );

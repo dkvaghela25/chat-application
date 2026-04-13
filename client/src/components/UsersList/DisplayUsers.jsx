@@ -1,12 +1,18 @@
-import { socket } from "../../socket";
+import { useSocketContext } from "../../contexts/socketContext";
 
-const DisplayUsers = ({ userList, setReceiver }) => {
+const DisplayUsers = ({ userList, setSearchResults, setSearchInput }) => {
 
-    const username = localStorage.getItem("username")
+    const { socket, username } = useSocketContext();
+
     const handleClick = (user) => {
-        socket.emit("joinRoom", { receiver: user.username })
-        setReceiver(user)
-    }
+        if (!socket) return console.error("Socket not connected");
+        console.log("user.username............................................", user.username)
+        socket.emit("joinRoom", { receiver: user.username });
+        if (setSearchInput && setSearchInput) {
+            setSearchResults(false);
+            setSearchInput("");
+        }
+    };
 
     return (
         <div className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-slate-200">
@@ -17,7 +23,7 @@ const DisplayUsers = ({ userList, setReceiver }) => {
                     className="group flex items-center gap-3 px-4 py-3 mx-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-all duration-200"
                 >
                     <div className="relative">
-                        <img className="rounded-full w-12 h-12" src={`https://ui-avatars.com/api/?name=${user.username}&background=random`} alt="" />
+                        <img className="rounded-full w-12 h-12" src={`https://ui-avatars.com/api/?name=${user.name}&background=random`} alt="" />
 
                         <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white 
                                 ${user.online ? 'bg-emerald-500' : 'bg-slate-300'}`}

@@ -1,9 +1,10 @@
 import express from "express";
-import { connectedUsers, search } from "../controller/userController.js";
+import { connectedUsers, search, userDetails } from "../controller/userController.js";
 
 const router = express.Router();
 
 router.get("/search", search);
 router.get("/connected_users", connectedUsers);
+router.get("/user_details/:username", userDetails);
 
 export default router;

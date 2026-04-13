@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { socket } from "../../socket";
+import { useState } from "react";
 import Attachment from "../Icons/Attachment";
 import Emoji from "../Icons/Emoji"
 import { IoSend } from "react-icons/io5";
@@ -8,8 +7,11 @@ import { getIcon } from "../../utils/getIcon";
 import { FaCode } from "react-icons/fa6";
 import CodeEditor from "./CodeEditor";
 import { useRef } from "react";
+import { useSocketContext } from "../../contexts/socketContext";
 
-const Footer = ({ receiver }) => {
+const Footer = () => {
+
+    const { socket, roomId, username } = useSocketContext();
 
     const typingTimeoutRef = useRef(null);
     const isTypingRef = useRef(false);
@@ -25,13 +27,6 @@ const Footer = ({ receiver }) => {
 
     const [isCodeEditorMode, setIsCodeEditorMode] = useState(false)
     const [inputValue, setInputValue] = useState(initialInputValues);
-    const [roomId, setRoomId] = useState("");
-
-    useEffect(() => {
-        const callback = (newRoomId) => setRoomId(newRoomId)
-        socket.on("roomJoined", callback);
-        return () => socket.off("roomJoined", callback)
-    }, [])
 
     const handleTextChange = (e) => {
 
@@ -41,7 +36,8 @@ const Footer = ({ receiver }) => {
 
         if (!isTypingRef.current) {
             socket.emit("isTyping", {
-                receiver: receiver.username,
+                sender: username,
+                roomId,
                 bool: true
             });
             isTypingRef.current = true;
@@ -53,7 +49,8 @@ const Footer = ({ receiver }) => {
 
         typingTimeoutRef.current = setTimeout(() => {
             socket.emit("isTyping", {
-                receiver: receiver.username,
+                sender: username,
+                roomId,
                 bool: false
             });
             isTypingRef.current = false;

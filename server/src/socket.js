@@ -17,17 +17,21 @@ export const initSocket = (server) => {
 
         socket.on("join", async (username) => {
             try {
-                // Save/update user
+
                 await User.findOneAndUpdate(
                     { username },
                     { socketId: socket.id, online: true },
-                    { upsert: true, new: true }
                 );
 
                 socket.username = username;
 
-                // Send updated users
-                const users = await User.find({ username });
+                const rooms = await Room.find({ members: username });
+                const targetedUsernames = [...new Set([username, ...rooms.flatMap(room => room.members)])];
+
+                const users = await User.find({
+                    username: { $in: targetedUsernames }
+                });
+
                 io.emit("userList", users);
 
             } catch (err) {
@@ -37,6 +41,8 @@ export const initSocket = (server) => {
 
         socket.on("joinRoom", async ({ receiver }) => {
             try {
+
+                console.log("Room join event received for:", receiver)
 
                 const sender = socket.username;
 
@@ -56,20 +62,26 @@ export const initSocket = (server) => {
 
                 socket.emit("roomJoined", roomId);
 
+                const rooms = await Room.find({ members: username });
+                const targetedUsernames = [...new Set([username, ...rooms.flatMap(room => room.members)])];
+
+                const users = await User.find({
+                    username: { $in: targetedUsernames }
+                });
+
+                io.emit("userList", users);
+
             } catch (err) {
                 console.error("Join Room Error:", err.message);
             }
         });
 
-        socket.on("isTyping", async ({ receiver, bool }) => {
-            const user = await User.findOne({ socketId: socket.id });
-            if (!user) return;
+        socket.on("isTyping", async ({ roomId, bool, sender }) => {
+            if (!roomId) return;
 
-            const receiverUser = await User.findOne({ username: receiver });
-            if (!receiverUser?.socketId) return;
-
-            io.to(receiverUser.socketId).emit("isTyping", {
-                username: user.username,
+            io.to(roomId).emit("isTyping", {
+                roomId,
+                sender,
                 bool,
             });
         });
@@ -78,7 +90,6 @@ export const initSocket = (server) => {
             try {
 
                 const { roomId, text = "", attachments = [], monaco_editor } = payload
-                console.log("payload.........................................", payload)
 
                 if (!roomId) return;
 
@@ -86,19 +97,10 @@ export const initSocket = (server) => {
                 if (!room) return;
 
                 const sender = socket.username;
-                const receiver = roomId === `${sender}_${sender}` ? sender : room.members.find(m => m !== sender);
-
-                console.log("message.....................................", {
-                    sender,
-                    receiver,
-                    text,
-                    attachments,
-                    monaco_editor
-                })
 
                 const message = await Message.create({
                     sender,
-                    receiver,
+                    roomId,
                     text,
                     attachments,
                     monaco_editor
@@ -113,15 +115,10 @@ export const initSocket = (server) => {
 
         socket.on("getMessages", async ({ roomId }) => {
             try {
-                const room = await Room.findOne({ roomId });
-                if (!room) return;
 
-                const messages = await Message.find({
-                    $or: [
-                        { sender: room.members[0], receiver: room.members[1] },
-                        { sender: room.members[1], receiver: room.members[0] },
-                    ]
-                }).sort({ createdAt: 1 });
+                if (!roomId) return;
+
+                const messages = await Message.find({ roomId }).sort({ createdAt: 1 });
 
                 socket.emit("chatHistory", messages);
 

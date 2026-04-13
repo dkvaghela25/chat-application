@@ -71,8 +71,6 @@ const RegistrationPage = () => {
         // eslint-disable-next-line no-unused-vars
         const { confirmPassword, ...requestData } = formData;
 
-        console.log(requestData);
-
         const res = await registerUser(requestData)
 
         if(res.success) {
