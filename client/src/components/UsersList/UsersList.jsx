@@ -2,24 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import { searchUser } from "../../api/user";
 import DisplayUsers from "./DisplayUsers";
 import { IoMdSearch } from "react-icons/io";
+import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import { useSocketContext } from "../../contexts/socketContext";
+import GroupModal from "./GroupModal";
 
 const UsersList = () => {
-
+    
     const { socket } = useSocketContext();
     const searchResultsRef = useRef(null);
     const [searchInput, setSearchInput] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [userList, setUserList] = useState([]);
 
-    // const fetchConnectedUsers = async () => {
-    //     const res = await connectedUsers(username);
-
-    //     if (res.success) {
-    //         setUserList(res.users)
-    //     }
-
-    // }
+    const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
     useEffect(() => {
         if(!socket) return;
@@ -44,7 +39,7 @@ const UsersList = () => {
     useEffect(() => {
         const handleClick = (e) => {
             if (searchResultsRef.current && !searchResultsRef.current.contains(e.target)) {
-                setSearchResults(false);
+                setSearchResults([]); 
                 setSearchInput("");
             }
         };
@@ -56,18 +51,25 @@ const UsersList = () => {
         <aside className="w-[30%] hidden md:flex flex-col bg-slate-50 border-r border-slate-200 h-full overflow-hidden">
             <header className="p-6 bg-white border-b border-slate-200 shadow-sm">
                 <div className="flex items-center justify-between mb-5">
-                    <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-                        Team
-                    </h2>
-                    <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
-                        {userList.filter(user => user.online).length} Online
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+                            Team
+                        </h2>
+                    </div>
+
+                    <button
+                        onClick={() => setIsGroupModalOpen(true)}
+                        className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-indigo-200 flex items-center justify-center group"
+                        title="Create New Group"
+                    >
+                        <AiOutlineUsergroupAdd className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    </button>
                 </div>
 
                 <div className="relative group">
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <IoMdSearch className="h-4 w-4 text-slate-900 group-focus-within:text-indigo-500 transition-colors" />
+                            <IoMdSearch className="h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                         </div>
                         <input
                             value={searchInput}
@@ -77,7 +79,7 @@ const UsersList = () => {
                             className="bg-slate-100 border-none rounded-xl w-full py-2.5 pl-10 pr-4 text-sm text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all duration-200 outline-none"
                         />
                         {searchInput.length > 0 && (
-                            <div ref={searchResultsRef} className="absolute z-20 shadow-md rounded-xl mt-5 bg-white w-full animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div ref={searchResultsRef} className="absolute z-20 shadow-md rounded-xl mt-2 bg-white w-full animate-in fade-in slide-in-from-top-2 duration-200 border border-slate-100">
                                 <p className="px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                                     Search Results
                                 </p>
@@ -98,6 +100,7 @@ const UsersList = () => {
                 </p>
                 <DisplayUsers userList={userList} />
             </div>
+            {isGroupModalOpen && <GroupModal setIsGroupModalOpen={setIsGroupModalOpen} />}
         </aside>
     );
 };
