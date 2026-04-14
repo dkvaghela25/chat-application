@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 
 const roomSchema = new mongoose.Schema(
     {
+        admin: {
+            type: String,
+        },
 
         roomId: {
             type: String,

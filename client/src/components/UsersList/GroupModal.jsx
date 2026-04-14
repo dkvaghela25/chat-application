@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchAllUser } from "../../api/user";
 import { useSocketContext } from "../../contexts/socketContext";
 
-const GroupModal = ({ setIsGroupModalOpen }) => {
+const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
     const [options, setOptions] = useState([]);
     const { socket, username } = useSocketContext()
 
@@ -11,19 +11,35 @@ const GroupModal = ({ setIsGroupModalOpen }) => {
         members: [],
     };
 
-    const [formData, setFormData] = useState(initialData);
+    const [formData, setFormData] = useState();
     const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false);
+
+    const initializeFormData = async () => {
+        if (groupDetails) {
+            setFormData({
+                groupName: groupDetails.name,
+                members: []
+            })
+        }
+        else {
+            setFormData(initialData)
+        }
+    }
+
+    useEffect(() => {
+        initializeFormData();
+    }, [])
 
     useEffect(() => {
         const getOptions = async () => {
             const res = await fetchAllUser();
             if (res.success) {
-                setOptions(res.users.filter((user) => user.username !== username));
+                const existingMembers = groupDetails?.members?.map(m => m.username) || [];
+                setOptions(res.users.filter((user) => (user.username !== username && !existingMembers.includes(user.username))));
             }
         };
         getOptions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleChange = (e) => {
@@ -53,9 +69,13 @@ const GroupModal = ({ setIsGroupModalOpen }) => {
         e.preventDefault();
         if (!validateForm()) return;
 
-        setLoading(true);
-        socket.emit("createGroup", formData);
-        setLoading(false);
+        if (groupDetails) {
+            // Hello
+            socket.emit("addMember", { roomId: groupDetails?.roomId, newMembers: formData.members });
+        } else {
+            socket.emit("createGroup", formData);
+        }
+
         setIsGroupModalOpen(false);
     };
 
@@ -76,8 +96,9 @@ const GroupModal = ({ setIsGroupModalOpen }) => {
                             Group Name
                         </label>
                         <input
+                            disabled={groupDetails}
                             name="groupName"
-                            value={formData.groupName}
+                            value={formData?.groupName}
                             onChange={handleChange}
                             type="text"
                             placeholder="e.g. Design Team"
@@ -93,7 +114,7 @@ const GroupModal = ({ setIsGroupModalOpen }) => {
                         </label>
                         <select
                             name="members"
-                            value={formData.members}
+                            value={formData?.members}
                             onChange={handleChange}
                             multiple
                             size={1}
@@ -125,10 +146,9 @@ const GroupModal = ({ setIsGroupModalOpen }) => {
                     </button>
                     <button
                         type="submit"
-                        disabled={loading}
                         className="px-6 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-95 transition-all disabled:opacity-50"
                     >
-                        {loading ? "Creating..." : "Create Group"}
+                        {groupDetails ? "Add Member" : "Create Group"}
                     </button>
                 </div>
             </form>

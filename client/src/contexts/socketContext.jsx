@@ -16,6 +16,7 @@ export const SocketContextProvider = ({ children }) => {
         if (!username) return;
 
         const onRoomJoined = (roomData) => {
+
             if (typeof roomData === "string") {
                 setRoomId(roomData);
                 return;

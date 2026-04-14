@@ -77,7 +77,6 @@ export const userDetails = async (req, res) => {
             userDetails
         });
 
-
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
