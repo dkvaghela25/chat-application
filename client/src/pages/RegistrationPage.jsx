@@ -78,7 +78,7 @@ const RegistrationPage = () => {
 
                 <form className="px-8 pb-10 grid grid-cols-1 md:grid-cols-2 gap-5" onSubmit={handleSubmit}>
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Full Name</label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Full Name <span className='text-red-500'>*</span></label>
                         <input
                             name='name'
                             value={formData.name}
@@ -91,7 +91,7 @@ const RegistrationPage = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Username</label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Username <span className='text-red-500'>*</span></label>
                         <input
                             name='username'
                             value={formData.username}
@@ -104,7 +104,7 @@ const RegistrationPage = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Email Address</label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Email Address <span className='text-red-500'>*</span></label>
                         <input
                             name='email'
                             value={formData.email}
@@ -117,7 +117,7 @@ const RegistrationPage = () => {
                     </div>
 
                     <div className='relative'>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Password</label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Password <span className='text-red-500'>*</span></label>
                         <div className="relative">
                             <input
                                 name='password'
@@ -139,7 +139,7 @@ const RegistrationPage = () => {
                     </div>
 
                     <div className='relative'>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Confirm Password</label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Confirm Password <span className='text-red-500'>*</span></label>
                         <div className="relative">
                             <input
                                 name='confirmPassword'

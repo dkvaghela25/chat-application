@@ -5,11 +5,11 @@ import { IoMdSearch } from "react-icons/io";
 
 const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
     const { socket, username } = useSocketContext();
-    
+
     const [searchInput, setSearchInput] = useState("");
     const [options, setOptions] = useState([]); // This will hold the filtered/searched list
     const [selectedMembers, setSelectedMembers] = useState([]); // Local state for selections
-    
+
     const [groupName, setGroupName] = useState("");
     const [errors, setErrors] = useState({});
 
@@ -24,8 +24,8 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
     // 2. Debounced Search Logic
     useEffect(() => {
         const handler = setTimeout(async () => {
-            const res = searchInput.trim() 
-                ? await searchUser(searchInput) 
+            const res = searchInput.trim()
+                ? await searchUser(searchInput)
                 : await fetchAllUser();
 
             if (res.success) {
@@ -76,7 +76,7 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
             <form className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-100 overflow-hidden" onSubmit={handleSubmit}>
-                
+
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
                     <h3 className="text-xl font-bold text-slate-800">{groupDetails ? "Add Members" : "Create New Group"}</h3>
@@ -86,7 +86,7 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
                 <div className="p-6 space-y-4">
                     {/* Group Name */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Group Name</label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Group Name <span className='text-red-500'>*</span></label>
                         <input
                             disabled={!!groupDetails}
                             value={groupName}
@@ -94,6 +94,7 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
                             placeholder="e.g. Project X"
                             className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-all ${errors.groupName ? 'border-red-400 bg-red-50/30' : 'border-slate-200 focus:border-indigo-500 bg-slate-50/50'}`}
                         />
+                        {errors.groupName && <p className='text-xs text-red-500 mt-1 ml-1 font-medium'>{errors.groupName}</p>}
                     </div>
 
                     {/* Search Input */}
@@ -135,8 +136,8 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
                             {selectedMembers.map(user => (
                                 <span key={user.username} className="inline-flex items-center bg-indigo-50 text-indigo-700 text-[11px] font-bold px-2 py-1 rounded-md border border-indigo-100">
                                     {user.name}
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         onClick={() => handleCheckboxChange(user)}
                                         className="ml-1.5 hover:text-red-500"
                                     >

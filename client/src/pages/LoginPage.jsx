@@ -55,7 +55,7 @@ const LoginPage = () => {
 
                 <form className="px-8 pb-8 space-y-5" onSubmit={handleSubmit}>
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Email Address</label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Email Address <span className='text-red-500'>*</span></label>
                         <input
                             name='email'
                             value={formData.email}
@@ -68,7 +68,7 @@ const LoginPage = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Password</label>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2 ml-1">Password <span className='text-red-500'>*</span></label>
                         <div className='relative'>
                             <input
                                 name='password'
