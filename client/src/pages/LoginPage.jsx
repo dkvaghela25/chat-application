@@ -8,6 +8,7 @@ const LoginPage = () => {
     const { socket } = useSocketContext();
     const navigate = useNavigate();
     const initialData = { "email": "", "password": "" };
+    const [loading, setLoading] = useState(false);
 
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState(initialData);
@@ -37,26 +38,35 @@ const LoginPage = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!validateForm()) return;
+        try {
 
-        const res = await loginUser(formData);
-        if (res.success) {
-            localStorage.setItem("username", res.username);
+            e.preventDefault();
+            if (!validateForm()) return;
 
-            if (!socket.connected) {
-                socket.connect();
+            setLoading(true)
+            const res = await loginUser(formData);
+
+            if (res.success) {
+                localStorage.setItem("username", res.username);
+
+                if (!socket.connected) {
+                    socket.connect();
+                }
+
+                socket.on("connect", () => {
+                    socket.emit("join", res.username);
+                });
+
+                if (socket.connected) {
+                    socket.emit("join", res.username);
+                }
+
+                setLoading(false)
+                navigate("/");
             }
-
-            socket.on("connect", () => {
-                socket.emit("join", res.username);
-            });
-
-            if (socket.connected) {
-                socket.emit("join", res.username);
-            }
-
-            navigate("/");
+        } catch (error) {
+            setLoading(false)
+            console.error("Login Failed : ",error)
         }
     };
 
@@ -105,8 +115,8 @@ const LoginPage = () => {
                         {errors.password && <p className='text-xs text-red-500 mt-1 ml-1 font-medium'>{errors.password}</p>}
                     </div>
 
-                    <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-2">
-                        Login
+                    <button className={`w-full text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-2 ${loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"}`}>
+                        {loading ? "Logging in ..." : "Login"}
                     </button>
 
                     <div className="text-center mt-6">

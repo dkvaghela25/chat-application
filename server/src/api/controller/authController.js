@@ -52,7 +52,7 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(200).json({ message: "User does not exist please register first" });
     }
 
     const isMatch = await user.comparePassword(password);

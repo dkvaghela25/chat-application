@@ -13,6 +13,7 @@ const RegistrationPage = () => {
         "confirmPassword": "",
     };
 
+    const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState(initialData);
@@ -56,15 +57,22 @@ const RegistrationPage = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!validateForm()) return;
+        try {
+            e.preventDefault();
+            setLoading(true)
+            if (!validateForm()) return;
 
-        // eslint-disable-next-line no-unused-vars
-        const { confirmPassword, ...requestData } = formData;
-        const res = await registerUser(requestData);
+            // eslint-disable-next-line no-unused-vars
+            const { confirmPassword, ...requestData } = formData;
+            const res = await registerUser(requestData);
 
-        if (res.success) {
-            navigate("/login");
+            if (res.success) {
+                navigate("/login");
+            }
+        }
+        catch (error) {
+            setLoading(false)
+            console.error("Registration Failed : ", error)
         }
     };
 
@@ -161,8 +169,8 @@ const RegistrationPage = () => {
                     </div>
 
                     <div className="md:col-span-2 pt-2">
-                        <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]">
-                            Create Account
+                        <button className={`w-full text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-2 ${loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"}`}>
+                            {loading ? "Registering ..." : "Register"}
                         </button>
                         <div className="text-center mt-6">
                             <p className="text-slate-600 text-sm">
