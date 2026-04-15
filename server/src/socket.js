@@ -73,6 +73,8 @@ export const initSocket = (server) => {
         socket.on("join", async (username) => {
             try {
 
+                console.log("Executing join event for ", username)
+
                 await User.findOneAndUpdate(
                     { username },
                     { socketId: socket.id, online: true },

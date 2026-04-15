@@ -8,7 +8,7 @@ import GroupModal from "./GroupModal";
 
 const UsersList = () => {
 
-    const { socket } = useSocketContext();
+    const { socket, username } = useSocketContext();
     const searchResultsRef = useRef(null);
     const [searchInput, setSearchInput] = useState("");
     const [searchResults, setSearchResults] = useState([]);
@@ -18,10 +18,13 @@ const UsersList = () => {
 
     useEffect(() => {
         if (!socket) return;
-        const callback = (data) => setConversationList(data);
+        const callback = (data) => {
+            console.log("object....................", data)
+            setConversationList(data)
+        };
         socket.on("conversationList", callback);
         return () => socket.off("conversationList", callback)
-    }, [socket]);
+    }, [socket, username]);
 
     useEffect(() => {
         const handler = setTimeout(async () => {

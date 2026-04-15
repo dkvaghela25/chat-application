@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa6';
 import { loginUser } from '../api/auth';
+import { useSocketContext } from '../contexts/socketContext';
 
 const LoginPage = () => {
+    const { socket } = useSocketContext();
     const navigate = useNavigate();
     const initialData = { "email": "", "password": "" };
 
@@ -41,9 +43,23 @@ const LoginPage = () => {
         const res = await loginUser(formData);
         if (res.success) {
             localStorage.setItem("username", res.username);
+
+            if (!socket.connected) {
+                socket.connect();
+            }
+
+            socket.on("connect", () => {
+                socket.emit("join", res.username);
+            });
+
+            if (socket.connected) {
+                socket.emit("join", res.username);
+            }
+
             navigate("/");
         }
     };
+
 
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">

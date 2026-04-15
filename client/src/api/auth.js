@@ -40,6 +40,6 @@ export const loginUser = async (userData) => {
 
     } catch (error) {
         console.error("Login Error:", error);
-        // throw new Error("Login failed");
+        throw new Error("Login failed");
     }
 };
