@@ -56,6 +56,11 @@ const ChatMessages = () => {
 
     }, [socket, roomId]);
 
+    const handleContextMenu = (e) => {
+        e.preventDefault();
+        console.log("Right click detected!");
+    }
+
     return (
         <>
             <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 ">
@@ -75,7 +80,7 @@ const ChatMessages = () => {
                                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-2">
                                     {isMe ? 'You' : activeChat?.isGroup ? msg.sender : activeChat?.name}
                                 </span>
-                                <div className={`px-4 py-2.5 rounded-2xl max-w-[80%]  shadow-sm transition-all
+                                <div onContextMenu={handleContextMenu} className={`px-4 py-2.5 rounded-2xl max-w-[80%]  shadow-sm transition-all
                                         ${isMe
                                         ? 'bg-indigo-600 text-white rounded-tr-none'
                                         : 'bg-slate-300/30 border border-slate-100 text-slate-700 rounded-tl-none'
@@ -111,7 +116,8 @@ const ChatMessages = () => {
                                     {msg?.monaco_editor?.code && (
                                         <CodeEditor previewMode={true} monaco_editor={msg.monaco_editor} />
                                     )}
-                                    <pre>{msg.text}</pre>
+
+                                    <div>{msg.text}</div>
                                 </div>
                             </div>
                         );

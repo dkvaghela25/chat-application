@@ -8,7 +8,7 @@ import GroupModal from "./GroupModal";
 
 const UsersList = () => {
 
-    const { socket, username } = useSocketContext();
+    const { socket } = useSocketContext();
     const searchResultsRef = useRef(null);
     const [searchInput, setSearchInput] = useState("");
     const [searchResults, setSearchResults] = useState([]);
@@ -19,12 +19,11 @@ const UsersList = () => {
     useEffect(() => {
         if (!socket) return;
         const callback = (data) => {
-            console.log("object....................", data)
             setConversationList(data)
         };
         socket.on("conversationList", callback);
         return () => socket.off("conversationList", callback)
-    }, [socket, username]);
+    }, []);
 
     useEffect(() => {
         const handler = setTimeout(async () => {
@@ -49,7 +48,6 @@ const UsersList = () => {
         document.addEventListener("mousedown", handleClick);
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
-
 
     const handleSearchClick = async (user) => {
         if (!socket) return console.error("Socket not connected");

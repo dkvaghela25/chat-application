@@ -14,7 +14,7 @@ export const initSocket = (server) => {
     });
 
     const buildConversationList = async (currentUsername) => {
-        
+
         const rooms = await Room.find({ members: currentUsername }).sort({ updatedAt: -1 });
 
         const directUsernames = [...new Set(
@@ -179,17 +179,24 @@ export const initSocket = (server) => {
         socket.on("addMember", async ({ roomId, newMembers = [] }) => {
             try {
 
-                
+
                 const room = await Room.findOne({ roomId });
                 if (!room) return;
-                
+
                 const admin = socket.username;
                 if (room.admin !== admin || newMembers.length === 0) return;
-                
+
                 room.members = [...room.members, ...newMembers];
                 await room.save();
 
                 socket.emit("newMemberAdded");
+
+                socket.emit("roomJoined", {
+                    roomId,
+                    isGroup: true,
+                    name: room.name,
+                    members: room.members,
+                });
 
                 await emitConversationListToUsers(room.members);
 
@@ -197,16 +204,16 @@ export const initSocket = (server) => {
                 console.error("Create Group Error:", err.message);
             }
         });
-        
+
         socket.on("removeMember", async ({ roomId, member }) => {
             try {
 
                 const room = await Room.findOne({ roomId });
                 if (!room) return;
-                
+
                 const admin = socket.username;
                 if (room.admin !== admin || !member.trim()) return;
-                
+
                 room.members = room.members.filter(m => m !== member);
                 await room.save();
 

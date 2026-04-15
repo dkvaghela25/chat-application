@@ -12,7 +12,11 @@ const Header = ({ setActiveChatDetailsIsOpen }) => {
         <>
             <header className="px-6 py-4 bg-white border-b border-slate-100 flex justify-between items-center">
                 <div className="w-full flex items-center gap-3">
-                    <img className="rounded-full w-12 h-12" src={`https://ui-avatars.com/api/?name=${activeChat.name}&background=random`} alt="" />
+                    <img
+                        className="rounded-full w-12 h-12 shadow-sm border border-slate-100"
+                        src={`https://ui-avatars.com/api/?name=${activeChat?.name}&background=random&color=fff&bold=true`}
+                        alt={activeChat?.name}
+                    />
                     <div>
                         <h2 className="text-slate-800 font-bold tracking-tight">{activeChat.name}</h2>
                         {activeChat.isGroup ? (

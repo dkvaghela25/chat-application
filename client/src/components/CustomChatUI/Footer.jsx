@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Attachment from "../Icons/Attachment";
 import Emoji from "../Icons/Emoji"
 import { IoSend } from "react-icons/io5";
@@ -70,6 +70,7 @@ const Footer = () => {
             monaco_editor,
         });
 
+        inputRef.current.innerHTML = ""
         setInputValue(initialInputValues);
         setIsCodeEditorMode(false);
     };
@@ -84,6 +85,8 @@ const Footer = () => {
             e.preventDefault();
             handleSend()
         };
+
+
     }
 
     const handleRemoveAttachment = (index) => {
@@ -92,6 +95,27 @@ const Footer = () => {
             attachments: prev.attachments.filter((_, i) => i !== index)
         }))
     }
+
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+
+        if (!inputRef.current) return;
+
+        const observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList' || mutation.type === 'characterData') {
+                    console.log('Text changed:', inputRef.current.innerHTML);
+                    setInputValue(prev => ({ ...prev, text: inputRef.current.innerHTML }))
+                }
+            }
+        });
+
+        observer.observe(inputRef.current, { characterData: true, childList: true, subtree: true });
+
+        return () => observer.disconnect();
+    }, []);
+
 
     return (
         <>
@@ -140,14 +164,14 @@ const Footer = () => {
 
                         <div className="flex-1 min-w-0 flex flex-col">
 
-                            <textarea
-                                onKeyDown={handleKeyDown}
-                                type="text"
-                                value={inputValue.text}
-                                onChange={handleTextChange}
-                                placeholder="Message #workspace..."
-                                className="bg-transparent resize-none [&::-webkit-scrollbar]:w-1.5 h-9 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2"
-                            ></textarea>
+                            <div
+                                ref={inputRef}
+                                contenteditable="true"
+                                // onKeyDown={handleKeyDown}
+                                // onChange={handleTextChange}
+                                // placeholder="Message #workspace..."
+                                className="bg-transparent resize-none [&::-webkit-scrollbar]:w-1.5 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2 overflow-x-auto"
+                            ></div>
 
                             {isCodeEditorMode && <CodeEditor monaco_editor={inputValue.monaco_editor} setInputValue={setInputValue} setIsCodeEditorMode={setIsCodeEditorMode} />}
 

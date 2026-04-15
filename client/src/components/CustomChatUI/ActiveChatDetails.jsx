@@ -78,12 +78,12 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                         <div className="flex flex-col md:flex-row items-center gap-5">
                             <div className="relative">
                                 <img
-                                    className="rounded-full w-24 h-24 shadow-md border-4 border-white"
-                                    src={`https://ui-avatars.com/api/?name=${activeChatDetails?.name}&background=random`}
+                                    className="rounded-full w-24 h-24 shadow-sm border border-slate-100"
+                                    src={`https://ui-avatars.com/api/?name=${activeChatDetails?.name}&background=random&color=fff&bold=true`}
                                     alt={activeChatDetails?.name}
                                 />
                                 {!activeChatDetails?.isGroup && (
-                                    <span className={`absolute bottom-1 right-1 h-6 w-6 rounded-full border-4 border-white 
+                                    <span className={`absolute bottom-0.5 right-0.5 h-6 w-6 rounded-full border-4 border-white 
                                     ${activeChatDetails?.online ? 'bg-emerald-500' : 'bg-slate-300'}`}
                                     />
                                 )}
@@ -104,7 +104,7 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                 </div>
 
                 <div className="flex flex-col flex-1 gap-3">
-                    <div className={`w-full flex justify-between items-baseline ${ !activeChatDetails?.isGroup ? "mt-10" : ""}`}>
+                    <div className={`w-full flex justify-between items-baseline ${!activeChatDetails?.isGroup ? "mt-10" : ""}`}>
                         <h3 className={`text-sm font-bold uppercase tracking-wider text-slate-400 `}>{activeChatDetails?.isGroup ? "Group Members" : "User Details"}</h3>
                         {activeChatDetails?.admin === username && <button
                             onClick={() => setIsGroupModalOpen(true)}
@@ -120,7 +120,7 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                         </div>
                     ) : activeChatDetails ? (
-                        <div className={`flex flex-col gap-y-6 gap-x-10 flex-1 ${ activeChatDetails?.isGroup ? "justify-between" : ""}`}>
+                        <div className={`flex flex-col gap-y-6 gap-x-10 flex-1 ${activeChatDetails?.isGroup ? "justify-between" : ""}`}>
                             {activeChatDetails.isGroup
                                 ? <>
                                     <div className="flex-1 max-h-90 -ml-5 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-400">
