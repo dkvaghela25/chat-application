@@ -104,8 +104,8 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                 </div>
 
                 <div className="flex flex-col flex-1 gap-3">
-                    <div className="w-full flex justify-between items-baseline">
-                        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">{activeChatDetails?.isGroup ? "Group Members" : "User Details"}</h3>
+                    <div className={`w-full flex justify-between items-baseline ${ !activeChatDetails?.isGroup ? "mt-10" : ""}`}>
+                        <h3 className={`text-sm font-bold uppercase tracking-wider text-slate-400 `}>{activeChatDetails?.isGroup ? "Group Members" : "User Details"}</h3>
                         {activeChatDetails?.admin === username && <button
                             onClick={() => setIsGroupModalOpen(true)}
                             className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-indigo-200 flex items-center justify-center"
@@ -120,7 +120,7 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                         </div>
                     ) : activeChatDetails ? (
-                        <div className="flex flex-col gap-y-6 gap-x-10 flex-1 justify-between">
+                        <div className={`flex flex-col gap-y-6 gap-x-10 flex-1 ${ activeChatDetails?.isGroup ? "justify-between" : ""}`}>
                             {activeChatDetails.isGroup
                                 ? <>
                                     <div className="flex-1 max-h-90 -ml-5 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-400">

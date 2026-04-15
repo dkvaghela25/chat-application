@@ -14,6 +14,7 @@ export const initSocket = (server) => {
     });
 
     const buildConversationList = async (currentUsername) => {
+        
         const rooms = await Room.find({ members: currentUsername }).sort({ updatedAt: -1 });
 
         const directUsernames = [...new Set(
