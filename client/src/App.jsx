@@ -4,6 +4,7 @@ import ProtectedRoutes from "./routes/ProtectedRoutes";
 import PublicRoutes from "./routes/PublicRoutes";
 import LoginPage from "./pages/LoginPage";
 import RegistrationPage from "./pages/RegistrationPage";
+import { ToastContainer } from "react-toastify";
 
 const App = () => {
 
@@ -31,7 +32,10 @@ const App = () => {
   ])
 
   return (
-    <RouterProvider router={router} />
+    <>
+      <RouterProvider router={router} />
+      <ToastContainer />
+    </>
   );
 };
 

@@ -49,9 +49,6 @@ export const login = async (req, res) => {
     if (!email) throw new RequestInputError('Email Id is required');
     if (!password) throw new RequestInputError('Password is required');
 
-    const validationResult = validationSchema({ email, password });
-    if (!validationResult.success) throw new ValidationError(validationResult.message);
-
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -61,7 +58,7 @@ export const login = async (req, res) => {
     const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(200).json({ message: "Invalid credentials" });
     }
 
     // Create token
