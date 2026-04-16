@@ -28,6 +28,11 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
         })));
     }
 
+    const handleClose = () => {
+        handleCodeChange("");
+        setIsCodeEditorMode(false)
+    }
+
     const handleLanguageChange = (e) => {
         setInputValue(prev => (
             {
@@ -76,7 +81,7 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
 
     return (
         <div className="w-full my-2 animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div className="overflow-hidden rounded-xl border border-slate-200 shadow-2xl shadow-indigo-100/50 bg-white">
+            <div className="overflow-hidden rounded-xl border border-slate-200 shadow-indigo-100/50 bg-white">
 
                 <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                     <div className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors">
@@ -105,7 +110,7 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
                             : <button
                                 className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 text-slate-400 transition-all"
                                 type="button"
-                                onClick={() => setIsCodeEditorMode(false)}
+                                onClick={handleClose}
                             >
                                 <IoMdClose size={18} />
                             </button>

@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import { fetchAllUser, searchUser } from "../../api/user"; // Ensure searchUser is imported
+import { fetchAllUser, searchUser } from "../../api/user";
 import { useSocketContext } from "../../contexts/socketContext";
 import { IoMdSearch } from "react-icons/io";
+import SearchInput from "../ui/SearchInput";
 
 const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
     const { socket, username } = useSocketContext();
 
     const [searchInput, setSearchInput] = useState("");
-    const [options, setOptions] = useState([]); // This will hold the filtered/searched list
-    const [selectedMembers, setSelectedMembers] = useState([]); // Local state for selections
+    const [options, setOptions] = useState([]);
+    const [selectedMembers, setSelectedMembers] = useState([]);
 
     const [groupName, setGroupName] = useState("");
     const [errors, setErrors] = useState({});
 
-    // 1. Initialize data
     useEffect(() => {
         if (groupDetails) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -21,7 +21,6 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
         }
     }, [groupDetails]);
 
-    // 2. Debounced Search Logic
     useEffect(() => {
         const handler = setTimeout(async () => {
             const res = searchInput.trim()
@@ -30,7 +29,6 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
 
             if (res.success) {
                 const existingMembers = groupDetails?.members?.map(m => m.username) || [];
-                // Filter out: Current User and already existing Group Members
                 const filtered = res.users.filter((user) => (
                     user.username !== username && !existingMembers.includes(user.username)
                 ));
@@ -77,14 +75,12 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
             <form className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-100 overflow-hidden" onSubmit={handleSubmit}>
 
-                {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
                     <h3 className="text-xl font-bold text-slate-800">{groupDetails ? "Add Members" : "Create New Group"}</h3>
                     <p className="text-sm text-slate-500">Search and select people to add.</p>
                 </div>
 
                 <div className="p-6 space-y-4">
-                    {/* Group Name */}
                     <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Group Name <span className='text-red-500'>*</span></label>
                         <input
@@ -97,21 +93,10 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
                         {errors.groupName && <p className='text-xs text-red-500 mt-1 ml-1 font-medium'>{errors.groupName}</p>}
                     </div>
 
-                    {/* Search Input */}
-                    <div className="relative">
-                        <IoMdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Search by name or username..."
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 text-sm bg-slate-100 border-none rounded-lg focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                        />
-                    </div>
+                    <SearchInput searchInput={searchInput} setSearchInput={setSearchInput} placeholder="Search by name or username..." />
 
-                    {/* Users List */}
                     <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                        <div className="max-h-40 overflow-y-auto divide-y divide-slate-50 custom-scrollbar">
+                        <div className="max-h-40 overflow-y-auto  [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 divide-y divide-slate-50 custom-scrollbar">
                             {options.map(user => (
                                 <label key={user.username} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer group">
                                     <input
@@ -130,7 +115,6 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
                         </div>
                     </div>
 
-                    {/* Selected Badges */}
                     {selectedMembers.length > 0 && (
                         <div className="flex flex-wrap gap-2 pt-1">
                             {selectedMembers.map(user => (
@@ -150,7 +134,6 @@ const GroupModal = ({ setIsGroupModalOpen, groupDetails }) => {
                     {errors.members && <p className="text-xs font-medium text-red-500 ml-1">*{errors.members}</p>}
                 </div>
 
-                {/* Footer */}
                 <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
                     <button type="button" onClick={() => setIsGroupModalOpen(false)} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800">
                         Cancel

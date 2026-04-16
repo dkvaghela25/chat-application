@@ -28,11 +28,11 @@ const Footer = () => {
     const [isCodeEditorMode, setIsCodeEditorMode] = useState(false)
     const [inputValue, setInputValue] = useState(initialInputValues);
 
-    const handleTextChange = (e) => {
+    const handleTextChange = () => {
 
-        setInputValue(prev => ({ ...prev, text: e.target.value }))
-        e.target.style.height = 'auto';
-        e.target.style.height = `${e.target.scrollHeight}px`;
+        setInputValue(prev => ({ ...prev, text: inputRef.current.innerHTML }))
+        inputRef.current.style.height = 'auto';
+        inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
 
         if (!isTypingRef.current) {
             socket.emit("isTyping", {
@@ -65,7 +65,7 @@ const Footer = () => {
 
         socket.emit("sendMessage", {
             roomId,
-            text,
+            text: text.trim(),
             attachments: inputValue.attachments.map(({ type, name, size }) => ({ type, name, size })),
             monaco_editor,
         });
@@ -105,8 +105,7 @@ const Footer = () => {
         const observer = new MutationObserver((mutationsList) => {
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList' || mutation.type === 'characterData') {
-                    console.log('Text changed:', inputRef.current.innerHTML);
-                    setInputValue(prev => ({ ...prev, text: inputRef.current.innerHTML }))
+                    handleTextChange()
                 }
             }
         });
@@ -115,7 +114,6 @@ const Footer = () => {
 
         return () => observer.disconnect();
     }, []);
-
 
     return (
         <>
@@ -166,12 +164,10 @@ const Footer = () => {
 
                             <div
                                 ref={inputRef}
-                                contenteditable="true"
-                                // onKeyDown={handleKeyDown}
-                                // onChange={handleTextChange}
-                                // placeholder="Message #workspace..."
-                                className="bg-transparent resize-none [&::-webkit-scrollbar]:w-1.5 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2 overflow-x-auto"
-                            ></div>
+                                contentEditable="true"
+                                onKeyDown={handleKeyDown}
+                                className="bg-transparent empty:before:content-['Type_something...'] empty:before:text-gray-400 resize-none [&::-webkit-scrollbar]:w-1.5 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2 overflow-x-auto"
+                            />
 
                             {isCodeEditorMode && <CodeEditor monaco_editor={inputValue.monaco_editor} setInputValue={setInputValue} setIsCodeEditorMode={setIsCodeEditorMode} />}
 

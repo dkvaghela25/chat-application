@@ -4,7 +4,7 @@ import { getIcon } from "../../utils/getIcon";
 import CodeEditor from "./CodeEditor";
 import { useSocketContext } from "../../contexts/socketContext";
 
-const ChatMessages = () => {
+const Messages = () => {
 
     const { socket, activeChat, username, roomId } = useSocketContext();
 
@@ -117,7 +117,7 @@ const ChatMessages = () => {
                                         <CodeEditor previewMode={true} monaco_editor={msg.monaco_editor} />
                                     )}
 
-                                    <div>{msg.text}</div>
+                                    <div dangerouslySetInnerHTML={{ __html: msg.text }} />
                                 </div>
                             </div>
                         );
@@ -145,4 +145,4 @@ const ChatMessages = () => {
     );
 };
 
-export default ChatMessages;
+export default Messages;

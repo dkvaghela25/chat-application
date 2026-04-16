@@ -2,7 +2,7 @@ import { Outlet, Navigate } from "react-router-dom";
 
 const ProtectedRoutes = () => {
     
-    const username = localStorage.getItem("username")
+    const username = localStorage.getItem("username");
 
     if (!username) {
         return <Navigate to="/login" replace />;

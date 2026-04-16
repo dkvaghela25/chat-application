@@ -5,6 +5,7 @@ import { IoMdSearch } from "react-icons/io";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import { useSocketContext } from "../../contexts/socketContext";
 import GroupModal from "./GroupModal";
+import SearchInput from "../ui/SearchInput";
 
 const UsersList = () => {
 
@@ -51,7 +52,6 @@ const UsersList = () => {
 
     const handleSearchClick = async (user) => {
         if (!socket) return console.error("Socket not connected");
-        console.log("user........",user)
         await socket.emit("joinRoom", { receiver: user.username });
         setSearchResults([]);
         setSearchInput("");
@@ -88,23 +88,14 @@ const UsersList = () => {
 
                     <div className="relative group">
                         <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <IoMdSearch className="h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                            </div>
-                            <input
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                                type="text"
-                                placeholder="Find a teammate..."
-                                className="bg-slate-100 border-none rounded-xl w-full py-2.5 pl-10 pr-4 text-sm text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all duration-200 outline-none"
-                            />
+                            <SearchInput searchInput={searchInput} setSearchInput={setSearchInput} placeholder="Find a teammate..." />
                             {searchInput.length > 0 && (
                                 <div ref={searchResultsRef} className="absolute z-20 shadow-md rounded-xl mt-2 bg-white w-full animate-in fade-in slide-in-from-top-2 duration-200 border border-slate-100">
                                     <p className="px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                                         Search Results
                                     </p>
                                     {searchResults.length > 0 ? (
-                                        <DisplayUsers userList={searchResults} handleJoin={handleSearchClick} />
+                                        <div className="max-h-90 overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400"><DisplayUsers userList={searchResults} handleJoin={handleSearchClick} /></div>
                                     ) : (
                                         <p className="px-6 py-4 text-sm text-slate-500 italic">No members found.</p>
                                     )}
@@ -114,7 +105,7 @@ const UsersList = () => {
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar bg-white">
+                <div className="flex-1 overflow-y-auto  [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 custom-scrollbar bg-white">
                     <p className="px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                         Your Conversations
                     </p>

@@ -15,8 +15,6 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
     const [loading, setLoading] = useState(true);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
-    console.log("activeChat..........................................", activeChat)
-
     const getActiveChatDetails = async () => {
         setLoading(true);
 

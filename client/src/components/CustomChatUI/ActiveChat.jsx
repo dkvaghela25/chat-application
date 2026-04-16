@@ -1,12 +1,12 @@
 import Header from './Header';
-import ChatMessages from './ChatMessages';
 import Footer from './Footer';
 import NothingHere from './NothingHere';
 import { useSocketContext } from '../../contexts/socketContext';
 import { useEffect, useState } from 'react';
 import ActiveChatDetails from './ActiveChatDetails';
+import Messages from './Messages';
 
-const CustomChatUI = () => {
+const ActiveChat = () => {
 
     const { roomId } = useSocketContext();
     const [activeChatDetailsIsOpen, setActiveChatDetailsIsOpen] = useState(false);
@@ -25,7 +25,7 @@ const CustomChatUI = () => {
                     : (
                         <div className="flex flex-col w-full mx-auto bg-white/80 backdrop-blur-md border border-slate-200 overflow-hidden shadow-xl">
                             <Header setActiveChatDetailsIsOpen={setActiveChatDetailsIsOpen} />
-                            <ChatMessages />
+                            <Messages />
                             <Footer />
                         </div>
                     )
@@ -34,4 +34,4 @@ const CustomChatUI = () => {
     );
 };
 
-export default CustomChatUI;
+export default ActiveChat;

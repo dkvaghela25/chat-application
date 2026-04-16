@@ -5,7 +5,7 @@ import { loginUser } from '../api/auth';
 import { useSocketContext } from '../contexts/socketContext';
 
 const LoginPage = () => {
-    const { socket } = useSocketContext();
+    const { socket, setUsername } = useSocketContext();
     const navigate = useNavigate();
     const initialData = { "email": "", "password": "" };
     const [loading, setLoading] = useState(false);
@@ -47,7 +47,8 @@ const LoginPage = () => {
             const res = await loginUser(formData);
 
             if (res.success) {
-                localStorage.setItem("username", res.username);
+
+                setUsername(res.username);
 
                 if (!socket.connected) {
                     socket.connect();

@@ -4,7 +4,9 @@ import { io } from "socket.io-client";
 const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
-    const username = localStorage.getItem("username");
+    const localStorageUsername = localStorage.getItem("username");
+    
+    const [username, setUsername] = useState(localStorageUsername || "");
     const [roomId, setRoomId] = useState();
     const [activeChat, setActiveChat] = useState(null);
 
@@ -13,9 +15,15 @@ export const SocketContextProvider = ({ children }) => {
     }), []);
 
     useEffect(() => {
+        localStorage.setItem("username", username);
+    }, [username]);
+
+    useEffect(() => {
+
         if (!username) return;
 
         const onRoomJoined = (roomData) => {
+
 
             if (typeof roomData === "string") {
                 setRoomId(roomData);
@@ -26,12 +34,13 @@ export const SocketContextProvider = ({ children }) => {
             setActiveChat(roomData || null);
         };
 
-        socket.on("roomJoined", onRoomJoined);
 
         if (!socket.connected) {
             socket.connect();
             socket.emit("join", username);
         }
+
+        socket.on("roomJoined", onRoomJoined);
 
         return () => {
             socket.off("roomJoined", onRoomJoined);
@@ -40,6 +49,7 @@ export const SocketContextProvider = ({ children }) => {
 
     const value = {
         username,
+        setUsername,
         socket,
         roomId,
         setRoomId,

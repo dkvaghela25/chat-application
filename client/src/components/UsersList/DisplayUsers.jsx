@@ -5,7 +5,7 @@ const DisplayUsers = ({ userList, handleJoin, handleRemove }) => {
     const { username } = useSocketContext();
 
     return (
-        <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto py-2 custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400">
             {userList.map((user) => (
                 <div
                     key={user.roomId || user._id || user.username}

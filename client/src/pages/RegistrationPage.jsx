@@ -59,8 +59,9 @@ const RegistrationPage = () => {
     const handleSubmit = async (e) => {
         try {
             e.preventDefault();
-            setLoading(true)
             if (!validateForm()) return;
+            
+            setLoading(true)
 
             // eslint-disable-next-line no-unused-vars
             const { confirmPassword, ...requestData } = formData;
