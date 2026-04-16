@@ -5,7 +5,7 @@ import SearchInput from "../ui/SearchInput";
 import { searchMessage } from "../../api/message";
 import { IoMdClose } from "react-icons/io";
 
-const Header = ({ setActiveChatDetailsIsOpen }) => {
+const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId }) => {
     const { activeChat } = useSocketContext();
     const [displayId, setDisplayId] = useState(false);
     const [searchInput, setSearchInput] = useState("");
@@ -38,6 +38,16 @@ const Header = ({ setActiveChatDetailsIsOpen }) => {
 
         return () => clearTimeout(handler);
     }, [searchInput]);
+
+    const highlightMessage = (messageId) => {
+        setHighlightedMessageId(messageId);
+        setDisplayId(false)
+
+        setTimeout(() => {
+            setHighlightedMessageId(null);
+        }, 3000);
+
+    }
 
     if (!activeChat) return null;
 
@@ -84,10 +94,13 @@ const Header = ({ setActiveChatDetailsIsOpen }) => {
                                                 <div className="text-xl font-semibold">Search in this chat</div>
                                                 <div>Find messages and links shared in this chat.</div>
                                             </div>
-                                            : <div className="flex flex-col max-h-100 overflow-y-auto mt-3">
+                                            : <div
+                                                className="flex flex-col max-h-100 overflow-y-auto mt-3"
+                                            >
                                                 {searchResults.map((msg) => (
                                                     <div
                                                         key={msg._id}
+                                                        onClick={() => highlightMessage(msg._id)}
                                                         className="p-3 border-b first:border-t border-slate-200 hover:bg-slate-50 transition-colors"
                                                     >
                                                         <div className="flex justify-between items-start mb-1">
