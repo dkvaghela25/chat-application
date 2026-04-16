@@ -5,11 +5,11 @@ import SearchInput from "../ui/SearchInput";
 import { searchMessage } from "../../api/message";
 import { IoMdClose } from "react-icons/io";
 
-const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId }) => {
+const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDisplayChat, displayChat }) => {
     const { activeChat } = useSocketContext();
     const [displayId, setDisplayId] = useState(false);
     const [searchInput, setSearchInput] = useState("");
-    const [searchResults, setSearchResults] = useState([])
+    const [searchResults, setSearchResults] = useState([]);
 
     const handleToggle = (id) => {
         setDisplayId(prev => prev === id ? false : id)
@@ -54,12 +54,13 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId }) => {
     return (
         <>
             <header className="px-6 py-4 bg-white border-b border-slate-100 flex justify-between items-center">
-                <div className="w-full flex items-center gap-3">
+                <div className="w-full h-full flex items-center gap-3">
                     <img
                         className="rounded-full w-12 h-12 shadow-sm border border-slate-100"
                         src={`https://ui-avatars.com/api/?name=${activeChat?.name}&background=random&color=fff&bold=true`}
                         alt={activeChat?.name}
                     />
+
                     <div>
                         <h2 className="text-slate-800 font-bold tracking-tight">{activeChat.name}</h2>
                         {activeChat.isGroup ? (
@@ -75,10 +76,16 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId }) => {
                             </div>
                         )}
                     </div>
+
+                    <div className="flex ml-5 gap-5 text-sm font-semibold h-full">
+                        <span onClick={() => setDisplayChat(true)} className={`py-3 cursor-pointer ${displayChat ? "border-b-2" : ""}`}>Chat</span>
+                        <span onClick={() => setDisplayChat(false)} className={`py-3 cursor-pointer ${!displayChat ? "border-b-2" : ""}`}>Attachments</span>
+                    </div>
+
                     <div className="ml-auto flex gap-2">
 
                         <div className="relative">
-                            <button type="button" onClick={() => handleToggle("search-modal")} className="relative p-2 rounded-full hover:bg-slate-100">
+                            <button type="button" onClick={() => handleToggle("search-modal")} className="cursor-pointer relative p-2 rounded-full hover:bg-slate-100">
                                 <HiOutlineSearch size={20} />
                             </button>
                             {displayId === "search-modal" && activeChat && (
@@ -130,7 +137,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId }) => {
                         </div>
 
                         <div className="relative">
-                            <button type="button" onClick={() => handleToggle("menu-modal")} className="p-2 rounded-full hover:bg-slate-100">
+                            <button type="button" onClick={() => handleToggle("menu-modal")} className="cursor-pointer p-2 rounded-full hover:bg-slate-100">
                                 <HiDotsVertical size={20} />
                             </button>
                             {displayId === "menu-modal" && activeChat && (

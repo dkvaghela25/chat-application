@@ -11,6 +11,7 @@ const ActiveChat = () => {
     const { roomId } = useSocketContext();
     const [activeChatDetailsIsOpen, setActiveChatDetailsIsOpen] = useState(false);
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+    const [displayChat, setDisplayChat] = useState(true);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -25,9 +26,14 @@ const ActiveChat = () => {
                     ? <ActiveChatDetails setActiveChatDetailsIsOpen={setActiveChatDetailsIsOpen} />
                     : (
                         <div className="flex flex-col w-full mx-auto bg-white/80 backdrop-blur-md border border-slate-200 overflow-hidden shadow-xl">
-                            <Header setActiveChatDetailsIsOpen={setActiveChatDetailsIsOpen} setHighlightedMessageId={setHighlightedMessageId} />
-                            <Messages highlightedMessageId={highlightedMessageId} />
-                            <Footer />
+                            <Header
+                                setActiveChatDetailsIsOpen={setActiveChatDetailsIsOpen}
+                                setHighlightedMessageId={setHighlightedMessageId}
+                                displayChat={displayChat}
+                                setDisplayChat={setDisplayChat}
+                            />
+                            <Messages highlightedMessageId={highlightedMessageId} displayChat={displayChat} />
+                            {displayChat && <Footer />}
                         </div>
                     )
             }
