@@ -63,7 +63,7 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
 
     return (
         <>
-            <div className="w-full bg-white flex flex-col justify-between p-15 overflow-y-auto space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 ">
+            <div className="w-full h-full bg-white flex flex-col justify-between p-6 md:p-15 overflow-y-auto space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 ">
                 <div>
                     <button
                         onClick={() => setActiveChatDetailsIsOpen(false)}

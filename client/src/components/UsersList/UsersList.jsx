@@ -68,9 +68,9 @@ const UsersList = () => {
 
     return (
         <>
-            <div className="w-[30%] flex flex-col bg-white/80 backdrop-blur-md border border-slate-200 shadow-xl h-full overflow-hidden">
-                <header className="p-6 bg-white border-b border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-5">
+            <div className="w-full flex flex-col bg-white/80 backdrop-blur-md border md:border-slate-200 shadow-xl h-full overflow-hidden">
+                <header className="p-4 md:p-6 bg-white border-b border-slate-200 shadow-sm">
+                    <div className="flex items-center justify-between mb-4 md:mb-5">
                         <div className="flex items-center gap-3">
                             <h2 className="text-xl font-bold text-slate-800 tracking-tight">
                                 Team
@@ -105,7 +105,7 @@ const UsersList = () => {
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto  [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 custom-scrollbar bg-white">
+                <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 custom-scrollbar bg-white">
                     <p className="px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                         Your Conversations
                     </p>

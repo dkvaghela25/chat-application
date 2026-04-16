@@ -25,7 +25,7 @@ const ActiveChat = () => {
                 : activeChatDetailsIsOpen
                     ? <ActiveChatDetails setActiveChatDetailsIsOpen={setActiveChatDetailsIsOpen} />
                     : (
-                        <div className="flex flex-col w-full mx-auto bg-white/80 backdrop-blur-md border border-slate-200 overflow-hidden shadow-xl">
+                        <div className="flex flex-col w-full h-full mx-auto bg-white/80 backdrop-blur-md border border-slate-200 overflow-hidden shadow-xl">
                             <Header
                                 setActiveChatDetailsIsOpen={setActiveChatDetailsIsOpen}
                                 setHighlightedMessageId={setHighlightedMessageId}
