@@ -1,6 +1,7 @@
 import Message from "../../models/Message.js";
 import { RequestInputError } from "../../helper/errors.js";
 import { sendError } from "../../helper/sendError.js";
+import { uploadToCloudinary } from "../../helper/uploadToCloudinary.js";
 
 export const search = async (req, res) => {
     try {
@@ -27,3 +28,33 @@ export const search = async (req, res) => {
         sendError(res, err);
     }
 };
+
+
+export const uploadFile = async (req, res) => {
+    try {
+        const files = req.files;
+
+        const uploadedFiles = await Promise.all(
+            files.map(async (file) => {
+                const result = await uploadToCloudinary(file.buffer);
+                console.log("result...................................", result);
+                return {
+                    url: result.secure_url,
+                    public_id: result.public_id,
+                    name: file.originalname,
+                    type: result.resource_type,
+                    size: result.bytes,
+                };
+            })
+        );
+
+        res.json({
+            success: true,
+            files: uploadedFiles,
+        });
+
+    } catch (err) {
+        console.error("Upload Error:", err);
+        res.status(500).json({ success: false });
+    }
+}
