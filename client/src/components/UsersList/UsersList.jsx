@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { searchUser } from "../../api/user";
 import DisplayUsers from "./DisplayUsers";
 import { IoMdSearch } from "react-icons/io";
-import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import { useSocketContext } from "../../contexts/socketContext";
 import GroupModal from "./GroupModal";
 import SearchInput from "../ui/SearchInput";
+import { RiChatNewLine } from "react-icons/ri";
 
 const UsersList = () => {
 
@@ -28,12 +27,20 @@ const UsersList = () => {
 
     useEffect(() => {
         const handler = setTimeout(async () => {
+
             if (!searchInput.trim()) {
                 setSearchResults([]);
                 return;
             }
-            const res = await searchUser(searchInput);
-            if (res.success) setSearchResults(res.users);
+
+            const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const regex = new RegExp(escapeRegExp(searchInput), "i");
+            const filteredData = conversationList.filter((curr) => {
+                const matchesName = regex.test(String(curr.name ?? ""));
+                return matchesName;
+            });
+
+            setSearchResults(filteredData);
         }, 300);
 
         return () => clearTimeout(handler);
@@ -51,8 +58,9 @@ const UsersList = () => {
     }, []);
 
     const handleSearchClick = async (user) => {
+        console.log("user", user)
         if (!socket) return console.error("Socket not connected");
-        await socket.emit("joinRoom", { receiver: user.username });
+        await socket.emit("joinRoom", { roomId: user.roomId });
         setSearchResults([]);
         setSearchInput("");
     };
@@ -80,9 +88,9 @@ const UsersList = () => {
                         <button
                             onClick={() => setIsGroupModalOpen(true)}
                             className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-indigo-200 flex items-center justify-center group"
-                            title="Create New Group"
+                            title="Start New Chat"
                         >
-                            <AiOutlineUsergroupAdd className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                            <RiChatNewLine className="h-5 w-5 group-hover:scale-110 transition-transform" />
                         </button>
                     </div>
 
@@ -114,7 +122,7 @@ const UsersList = () => {
 
             </div>
 
-            {isGroupModalOpen && <GroupModal setIsGroupModalOpen={setIsGroupModalOpen} />}
+            {isGroupModalOpen && <GroupModal conversationList={conversationList} setIsGroupModalOpen={setIsGroupModalOpen} />}
 
         </>
     );

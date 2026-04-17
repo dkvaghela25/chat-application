@@ -1,4 +1,5 @@
 import { sendError } from "../../helper/sendError.js";
+import Room from "../../models/Room.js"
 
 export const roomDetails = async (req, res) => {
   try {

@@ -13,7 +13,6 @@ const DisplayUsers = ({ userList, handleJoin, handleRemove }) => {
                     className={`group flex items-center gap-4 px-4 py-3 mx-2 rounded-xl transition-all duration-200 
                         ${handleJoin ? 'cursor-pointer hover:bg-slate-50' : 'cursor-default'}`}
                 >
-                    {/* Avatar Section */}
                     <div className="relative shrink-0">
                         <img 
                             className="rounded-full w-12 h-12 shadow-sm border border-slate-100" 
@@ -28,7 +27,6 @@ const DisplayUsers = ({ userList, handleJoin, handleRemove }) => {
                         )}
                     </div>
 
-                    {/* Info Section */}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                             <h3 className="text-[14px] font-bold text-slate-700 truncate group-hover:text-indigo-600 transition-colors">
@@ -47,11 +45,10 @@ const DisplayUsers = ({ userList, handleJoin, handleRemove }) => {
                         </p>
                     </div>
 
-                    {/* Action Section (Remove Button) */}
                     {(handleRemove && user.username !== username) && (
                         <button
                             onClick={(e) => { 
-                                e.stopPropagation(); // Prevents handleJoin from firing
+                                e.stopPropagation(); 
                                 handleRemove(user.username);
                             }}
                             className="p-2.5 rounded-full text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200 active:scale-90"

@@ -13,8 +13,6 @@ const Attachments = ({ messages }) => {
             }))
         ))
 
-    console.log("attatchments..........................", messages);
-    console.log("attatchments..........................", attachments);
 
     const rows = attachments
 
