@@ -106,7 +106,7 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
 
                 <div className="p-6 space-y-4">
 
-                    {!groupDetails && <div className="flex gap-10">
+                    {!groupDetails && <div className="flex gap-5 sm:gap-10">
                         <div className="flex gap-2">
                             <input className="accent-indigo-500" name="chat-type" id="private-chat" type="radio" value="private-chat" checked={chatType === "private-chat"} onChange={(e) => setChatType(e.target.value)} />
                             <label htmlFor="private-chat">Private Chat</label>

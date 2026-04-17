@@ -4,43 +4,46 @@ import { MdOutlineFileDownload } from "react-icons/md";
 
 const CustomTable = ({ rows, columns }) => {
     return (
-        <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <table className="w-full text-left border-collapse">
-                <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-200">
-                        {columns.map((col) => (
-                            <th
-                                className="py-4 px-6 text-[11px] font-bold uppercase tracking-widest text-slate-500"
-                                key={col.accessor}
-                            >
-                                {col.Header}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                    {rows.length === 0 ? (
-                        <tr className="text-center">
-                            <td className="p-12 text-slate-400 italic text-sm" colSpan={columns.length}>
-                                No attachments found.
-                            </td>
+        <div className="w-full rounded-xl border border-slate-200 bg-white shadow-sm">
+            {/* Added overflow-x-auto and a min-width to prevent squishing */}
+            <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                        <tr className="bg-slate-50/50 border-b border-slate-200">
+                            {columns.map((col) => (
+                                <th
+                                    className="py-4 px-6 text-[11px] font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap"
+                                    key={col.accessor}
+                                >
+                                    {col.Header}
+                                </th>
+                            ))}
                         </tr>
-                    ) : (
-                        rows.map((row) => (
-                            <tr key={row.id} className="hover:bg-slate-50/50 transition-colors">
-                                {columns.map(col => (
-                                    <td
-                                        key={col.accessor}
-                                        className="py-2 px-6 text-sm text-slate-600 w-fit"
-                                    >
-                                        {formattedValue(row[col.accessor], col.accessor)}
-                                    </td>
-                                ))}
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        {rows.length === 0 ? (
+                            <tr className="text-center">
+                                <td className="p-12 text-slate-400 italic text-sm" colSpan={columns.length}>
+                                    No attachments found.
+                                </td>
                             </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
+                        ) : (
+                            rows.map((row) => (
+                                <tr key={row.id} className="hover:bg-slate-50/50 transition-colors group">
+                                    {columns.map(col => (
+                                        <td
+                                            key={col.accessor}
+                                            className="py-3 px-6 text-sm text-slate-600 whitespace-nowrap"
+                                        >
+                                            {formattedValue(row[col.accessor], col.accessor)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

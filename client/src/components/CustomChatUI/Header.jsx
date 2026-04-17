@@ -83,7 +83,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
                         )}
                     </div>
 
-                    <div className="hidden sm:flex ml-2 md:ml-5 gap-3 md:gap-5 text-sm font-semibold h-full items-center">
+                    <div className="hidden lg:flex ml-2 md:ml-5 gap-3 md:gap-5 text-sm font-semibold h-full items-center">
                         <span onClick={() => setDisplayChat(true)} className={`py-3 cursor-pointer ${displayChat ? "border-b-2 border-indigo-600 text-indigo-600" : ""}`}>Chat</span>
                         <span onClick={() => setDisplayChat(false)} className={`py-3 cursor-pointer ${!displayChat ? "border-b-2 border-indigo-600 text-indigo-600" : ""}`}>Attachments</span>
                     </div>
@@ -117,7 +117,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
                                                 <p className="text-sm text-slate-400">Find specific messages, links, and text shared in this conversation.</p>
                                             </div>
                                         ) : (
-                                            <div className="flex flex-col max-h-[400px] overflow-y-auto mt-4 pr-1 -mr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full gap-2">
+                                            <div className="flex flex-col max-h-100 overflow-y-auto mt-4 pr-1 -mr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full gap-2">
                                                 {searchResults.map((msg) => (
                                                     <div
                                                         key={msg._id}
@@ -160,13 +160,13 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
                                         
                                         <button
                                             onClick={() => { setDisplayChat(true); handleToggle("menu-modal"); }}
-                                            className="sm:hidden w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                            className="lg:hidden w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                                         >
                                             <span>Chat View</span>
                                         </button>
                                         <button
                                             onClick={() => { setDisplayChat(false); handleToggle("menu-modal"); }}
-                                            className="sm:hidden w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                            className="lg:hidden w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                                         >
                                             <span>Attachments</span>
                                         </button>

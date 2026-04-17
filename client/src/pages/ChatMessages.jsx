@@ -10,11 +10,12 @@ const ChatMessages = () => {
             <div className={`w-full md:w-[35%] lg:w-[25%] ${roomId ? 'hidden md:flex' : 'flex'} flex-col h-full`}>
                 <UsersList />
             </div>
-            <div className={`w-full justify-center md:w-[65%] lg:w-[70%] ${!roomId ? 'hidden md:flex' : 'flex'} flex-col h-full`}>
+            <div className={`flex-1 w-full justify-center md:w-[65%] lg:w-[70%] ${!roomId ? 'hidden md:flex' : 'flex'} flex-col h-full`}>
                 <ActiveChat />
             </div>
         </div>
     );
+    
 };
 
 export default ChatMessages;
