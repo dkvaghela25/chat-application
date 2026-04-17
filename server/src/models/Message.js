@@ -31,7 +31,7 @@ const messageSchema = new mongoose.Schema(
         },
         url: {
           type: String,
-          default: "",
+          default: "this_is_temporary_url",
         }
       }
     ],

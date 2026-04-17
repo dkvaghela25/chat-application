@@ -16,6 +16,8 @@ const ActiveChat = () => {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setActiveChatDetailsIsOpen(false);
+        setDisplayChat(true);
+        setHighlightedMessageId(null);
     }, [roomId]);
 
     return (
