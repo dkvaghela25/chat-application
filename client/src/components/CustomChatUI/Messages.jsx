@@ -8,7 +8,7 @@ import Attachments from "./Attachments";
 const Messages = ({ highlightedMessageId, displayChat }) => {
 
     const [messages, setMessages] = useState([]);
-    const [isTyping, setIsTyping] = useState(false);
+    const [isTyping, setIsTyping] = useState({});
 
     const { socket, roomId } = useSocketContext();
 

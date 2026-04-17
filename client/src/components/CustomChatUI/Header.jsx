@@ -17,14 +17,14 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
 
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.key == "f" && e.ctrlKey) {
+            if (e.key == "f" && e.ctrlKey && displayChat) {
                 e.preventDefault();
                 setDisplayId("search-modal")
             };
         }
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [])
+    }, [displayChat])
 
     useEffect(() => {
         const handler = setTimeout(async () => {
@@ -41,7 +41,9 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
 
     const highlightMessage = (messageId) => {
         setHighlightedMessageId(messageId);
-        setDisplayId(false)
+        setDisplayId(false);
+        setSearchInput("");
+        setSearchResults([]);
 
         setTimeout(() => {
             setHighlightedMessageId(null);
@@ -55,7 +57,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
         <>
             <header className="px-4 py-4 md:px-6 bg-white border-b border-slate-100 flex justify-between items-center shrink-0">
                 <div className="w-full h-full flex items-center gap-2 md:gap-3">
-                    <button 
+                    <button
                         onClick={() => setRoomId(null)}
                         className="md:hidden p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors"
                     >
@@ -91,23 +93,23 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
                     <div className="ml-auto flex gap-1 md:gap-2">
 
                         <div className="relative">
-                            <button type="button" onClick={() => handleToggle("search-modal")} className="cursor-pointer relative p-2 rounded-full hover:bg-slate-100">
+                            {displayChat && <button type="button" onClick={() => handleToggle("search-modal")} className="cursor-pointer relative p-2 rounded-full hover:bg-slate-100">
                                 <HiOutlineSearch size={20} />
-                            </button>
+                            </button>}
                             {displayId === "search-modal" && activeChat && (
                                 <>
                                     <div className="absolute top-10 right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[400px] p-4 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200 z-30 animate-in fade-in zoom-in-95 duration-200">
                                         <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
                                             <span className="text-sm font-bold uppercase tracking-wider text-slate-500">Find in chat</span>
-                                            <button 
+                                            <button
                                                 onClick={() => handleToggle(false)}
                                                 className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                                             >
                                                 <IoMdClose size={20} />
                                             </button>
                                         </div>
-                                        <SearchInput searchInput={searchInput} setSearchInput={setSearchInput} placeholder="Search messages..." />
-                                        
+                                        <SearchInput autoFocus={true} searchInput={searchInput} setSearchInput={setSearchInput} placeholder="Search messages..." />
+
                                         {searchResults.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
                                                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300">
@@ -157,7 +159,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
                             {displayId === "menu-modal" && activeChat && (
                                 <>
                                     <div className="absolute top-8 right-0 mt-3 w-48 bg-white rounded-lg text-slate-700 font-semibold shadow-xl border border-slate-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                                        
+
                                         <button
                                             onClick={() => { setDisplayChat(true); handleToggle("menu-modal"); }}
                                             className="lg:hidden w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"

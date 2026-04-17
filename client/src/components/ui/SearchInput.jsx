@@ -1,12 +1,13 @@
 import { IoMdSearch } from "react-icons/io";
 
-const SearchInput = ({ searchInput, setSearchInput, placeholder }) => {
+const SearchInput = ({ autoFocus = false, searchInput, setSearchInput, placeholder }) => {
     return (
         <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <IoMdSearch className="h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
             </div>
             <input
+                autoFocus={autoFocus}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 type="text"
