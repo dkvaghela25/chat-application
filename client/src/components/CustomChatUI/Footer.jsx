@@ -126,8 +126,11 @@ const Footer = () => {
     const handlePaste = (e) => {
         e.preventDefault();
 
+        if(!inputRef.current) return;
+
         const pastedData = e.clipboardData.getData('text');
 
+        // eslint-disable-next-line react-hooks/immutability
         inputRef.current.innerText += pastedData;
 
         const selection = window.getSelection();
@@ -206,7 +209,7 @@ const Footer = () => {
                             <button type="button" onClick={() => setIsCodeEditorMode(prev => !prev)} className='p-2 rounded-full transition-all duration-200 hover:bg-slate-200' >
                                 <FaCode size={18} />
                             </button>
-                            <Emoji setInputValue={setInputValue} />
+                            <Emoji inputRef={inputRef} />
                             <Attachment setInputValue={setInputValue} />
                             <button
                                 type="submit"

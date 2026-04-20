@@ -3,11 +3,12 @@ import { BsEmojiSmile } from "react-icons/bs";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 
-const Emoji = ({ setInputValue }) => {
+const Emoji = ({ inputRef }) => {
     const [showPicker, setShowPicker] = useState(false);
 
     const handleSelect = (emoji) => {
-        setInputValue(prev => ({ ...prev, text: prev.text + emoji.native }))
+        if(!inputRef.current) return;
+        inputRef.current.innerHTML += emoji.native;
         setShowPicker(false);
     };
 

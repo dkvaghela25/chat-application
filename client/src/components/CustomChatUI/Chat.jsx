@@ -63,11 +63,10 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                                     {msg?.attachments?.length !== 0 && (
                                         <div className="flex flex-wrap gap-2 my-2">
                                             {msg.attachments?.map((attachment, index) => (
-                                                <a
-                                                    target="_blank"
-                                                    href={attachment.url}
+                                                <div
+                                                    onClick={() => window.open(attachment.url, "_blank")}
                                                     key={index}
-                                                    className="flex w-70 items-center hover:bg-slate-100 bg-white border border-slate-200 rounded-lg p-2 pr-1 group animate-in fade-in zoom-in-95 duration-200"
+                                                    className="flex cursor-pointer w-70 items-center bg-white border border-slate-200 rounded-lg p-2 pr-1 group animate-in fade-in zoom-in-95 duration-200"
                                                 >
                                                     <div className="bg-indigo-600/20 p-2 rounded-md shadow-sm text-indigo-700 mr-2">
                                                         {getIcon(attachment.type.split("/")[0])}
@@ -85,10 +84,10 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                                                         </span>
                                                     </div>
 
-                                                    <a href={getDownloadUrl(attachment.url)} download={attachment.name} className="ml-auto p-2 cursor-pointer rounded-full text-slate-500 hover:bg-indigo-50 hover:text-indigo-500 hover:font-semibold transition-colors">
+                                                    <a href={getDownloadUrl(attachment.url)} download={attachment.name} className="ml-auto p-2 cursor-pointer rounded-full text-slate-500 hover:bg-indigo-50! hover:text-indigo-500! hover:font-semibold! transition-colors">
                                                         <MdOutlineFileDownload size={20} />
                                                     </a>
-                                                </a>
+                                                </div>
                                             ))}
                                         </div>
                                     )}
