@@ -3,12 +3,14 @@ import { fetchAllUser, searchUser } from "../../api/user";
 import { useSocketContext } from "../../contexts/socketContext";
 import { IoMdSearch } from "react-icons/io";
 import SearchInput from "../ui/SearchInput";
+import { toast } from "react-toastify";
 
 const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => {
     const { socket, username } = useSocketContext();
 
     const [searchInput, setSearchInput] = useState("");
     const [options, setOptions] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const [chatType, setChatType] = useState(groupDetails ? "group-chat" : "private-chat");
     const [selectedMembers, setSelectedMembers] = useState([]);
@@ -28,26 +30,37 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
         setSelectedMembers([]);
     }, [chatType]);
 
+    const fetchOptions = () => {
+        try {
+            setIsLoading(true);
+            const handler = setTimeout(async () => {
+                const res = searchInput.trim()
+                    ? await searchUser(searchInput)
+                    : await fetchAllUser();
+
+                if (res.success) {
+
+                    const existingMembers = chatType === "group-chat"
+                        ? groupDetails?.members?.map(m => m.username) || []
+                        : conversationList.map(u => u.username) || [];
+
+                    const filtered = res.users
+                        .filter((user) => (user.username !== username && !existingMembers.includes(user.username)))
+
+                    setOptions(filtered);
+                }
+                setIsLoading(false);
+            }, 300);
+
+            return () => clearTimeout(handler);
+        } catch (error) {
+            toast(error.message)
+            setIsLoading(false);
+        }
+    }
+
     useEffect(() => {
-        const handler = setTimeout(async () => {
-            const res = searchInput.trim()
-                ? await searchUser(searchInput)
-                : await fetchAllUser();
-
-            if (res.success) {
-
-                const existingMembers = chatType === "group-chat"
-                    ? groupDetails?.members?.map(m => m.username) || []
-                    : conversationList.map(u => u.username) || [];
-
-                const filtered = res.users
-                    .filter((user) => (user.username !== username && !existingMembers.includes(user.username)))
-
-                setOptions(filtered);
-            }
-        }, 300);
-
-        return () => clearTimeout(handler);
+        fetchOptions();
     }, [searchInput, username, groupDetails, chatType]);
 
     const handleSelectedMembersChange = (user) => {
@@ -147,7 +160,11 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                                     </div>
                                 </label>
                             ))}
-                            {options.length === 0 && <p className="p-4 text-center text-xs text-slate-400">No users found</p>}
+                            {options.length === 0 &&
+                                !isLoading
+                                ? <p className="p-4 text-center text-xs text-slate-400">No users found</p>
+                                : <div className="flex justify-center py-5"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" /></div>
+                            }
                         </div>
                     </div>
 
@@ -161,7 +178,7 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                                         onClick={() => handleCheckboxChange(user)}
                                         className="ml-1.5 hover:text-red-500"
                                     >
-                                        ×
+                                        x
                                     </button>
                                 </span>
                             ))}

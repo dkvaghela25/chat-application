@@ -6,7 +6,7 @@ import { uploadToCloudinary } from "../../helper/uploadToCloudinary.js";
 export const search = async (req, res) => {
     try {
         const { searchInput, roomId } = req.query;
-        
+
         if (!searchInput) {
             throw new RequestInputError("Search input is required", 400);
         }
@@ -33,10 +33,10 @@ export const search = async (req, res) => {
 export const uploadFile = async (req, res) => {
     try {
         const files = req.files;
-        console.log("req....................................", req)
-        console.log("files....................................", files)
+        const MAX_SIZE = 2 * 1024 * 1024;
         const uploadedFiles = await Promise.all(
             files.map(async (file) => {
+                if (file.size > MAX_SIZE) throw new Error(`File ${file.originalname} exceeded file size of 2 MB.`)
                 const result = await uploadToCloudinary(file.buffer);
                 return {
                     url: result.secure_url,
@@ -54,6 +54,6 @@ export const uploadFile = async (req, res) => {
 
     } catch (err) {
         console.error("Upload Error:", err);
-        res.status(500).json({ success: false });
+        sendError(res, err);
     }
 }

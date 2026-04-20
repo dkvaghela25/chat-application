@@ -1,3 +1,4 @@
+import { toast } from "react-toastify";
 import axiosInstance from "../utils/axiosInstance";
 
 export const searchMessage = async (searchInput, roomId) => {
@@ -21,8 +22,11 @@ export const searchMessage = async (searchInput, roomId) => {
 export const uploadFiles = async (files) => {
     try {
 
+        const MAX_SIZE = 2 * 1024 * 1024;
+
         const formData = new FormData();
         files.forEach(file => {
+            if(file.size > MAX_SIZE) throw new Error(`File ${file.name} exceeded file size of 2 MB.`)
             formData.append("files", file);
         });
 
@@ -45,6 +49,7 @@ export const uploadFiles = async (files) => {
 
     } catch (error) {
         console.error("Upload Error:", error);
+        toast.error(error.message);
         throw new Error("Upload failed");
     }
 };

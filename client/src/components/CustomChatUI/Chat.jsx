@@ -72,7 +72,7 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                                                         {getIcon(attachment.type.split("/")[0])}
                                                     </div>
 
-                                                    <div className="flex flex-col max-w-[70%]  mr-2">
+                                                    <div className="flex flex-col max-w-[60%]  mr-2">
                                                         <span className="text-sm font-semibold text-slate-700 truncate ">
                                                             {attachment.name}
                                                         </span>
@@ -84,7 +84,7 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                                                         </span>
                                                     </div>
 
-                                                    <a href={getDownloadUrl(attachment.url)} download={attachment.name} className="ml-auto p-2 cursor-pointer rounded-full text-slate-500 hover:bg-indigo-50! hover:text-indigo-500! hover:font-semibold! transition-colors">
+                                                    <a onClick={e => e.stopPropagation()} href={getDownloadUrl(attachment.url)} download={attachment.name} className="ml-auto p-2 cursor-pointer rounded-full text-slate-500 hover:bg-indigo-50! hover:text-indigo-500! hover:font-semibold! transition-colors">
                                                         <MdOutlineFileDownload size={20} />
                                                     </a>
                                                 </div>

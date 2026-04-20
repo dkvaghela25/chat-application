@@ -9,11 +9,13 @@ import CodeEditor from "./CodeEditor";
 import { useRef } from "react";
 import { useSocketContext } from "../../contexts/socketContext";
 import { uploadFiles } from "../../api/message";
+import { toast } from "react-toastify";
 
 const Footer = () => {
 
     const { socket, roomId, username } = useSocketContext();
 
+    const [isLoading, setIsLoading] = useState(false);
     const typingTimeoutRef = useRef(null);
     const isTypingRef = useRef(false);
 
@@ -31,7 +33,7 @@ const Footer = () => {
 
     const handleTextChange = () => {
 
-        setInputValue(prev => ({ ...prev, text: inputRef.current.innerHTML }))
+        setInputValue(prev => ({ ...prev, text: inputRef.current.innerHTML === "<br>" ? "" : inputRef.current.innerHTML }))
         inputRef.current.style.height = 'auto';
         inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
 
@@ -60,27 +62,37 @@ const Footer = () => {
     }
 
     const handleSend = async (e) => {
-        e?.preventDefault();
-        const { text, attachments, monaco_editor } = inputValue;
-        if (!text?.trim() && !monaco_editor.code?.trim() && attachments.length === 0) return;
+        try {
+            e?.preventDefault();
 
-        let uploadedFiles = [];
+            setIsLoading(true);
 
-        if(inputValue.attachments.length !== 0) {
-            const res = await uploadFiles(inputValue.attachments);
-            uploadedFiles = res.files;
+            const { text, attachments, monaco_editor } = inputValue;
+            if (!text?.trim() && !monaco_editor.code?.trim() && attachments.length === 0) return;
+
+            let uploadedFiles = [];
+
+            if (inputValue.attachments.length !== 0) {
+                const res = await uploadFiles(inputValue.attachments);
+                uploadedFiles = res.files;
+            }
+
+            socket.emit("sendMessage", {
+                roomId,
+                text: text.trim(),
+                attachments: uploadedFiles,
+                monaco_editor,
+            });
+
+            inputRef.current.innerHTML = ""
+
+            setIsLoading(false);
+            setInputValue(initialInputValues);
+            setIsCodeEditorMode(false);
+        } catch (error) {
+            setIsLoading(false);
+            toast.error(error);
         }
-
-        socket.emit("sendMessage", {
-            roomId,
-            text: text.trim(),
-            attachments: uploadedFiles,
-            monaco_editor,
-        });
-
-        inputRef.current.innerHTML = ""
-        setInputValue(initialInputValues);
-        setIsCodeEditorMode(false);
     };
 
     const handleKeyDown = (e) => {
@@ -126,7 +138,7 @@ const Footer = () => {
     const handlePaste = (e) => {
         e.preventDefault();
 
-        if(!inputRef.current) return;
+        if (!inputRef.current) return;
 
         const pastedData = e.clipboardData.getData('text');
 
@@ -214,14 +226,14 @@ const Footer = () => {
                             <button
                                 type="submit"
                                 className={`p-2 rounded-lg  border-l disabled:cursor-not-allowed disabled:text-slate-400 border-slate-200 pl-3 transition-colors text-slate-700 hover:text-indigo-700`}
-                                disabled={!inputValue?.text?.trim() && !inputValue?.monaco_editor?.code?.trim() && inputValue.attachments.length === 0}
+                                disabled={ isLoading || (!inputValue?.text?.trim() && !inputValue?.monaco_editor?.code?.trim() && inputValue.attachments.length === 0)}
                             >
                                 <IoSend size={18} />
                             </button>
                         </div>
                     </div>
                 </form>
-            </footer >
+            </footer>
         </>
     );
 };
