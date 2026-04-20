@@ -123,6 +123,26 @@ const Footer = () => {
         return () => observer.disconnect();
     }, []);
 
+    const handlePaste = (e) => {
+        e.preventDefault();
+
+        const pastedData = e.clipboardData.getData('text');
+
+        inputRef.current.innerText += pastedData;
+
+        const selection = window.getSelection();
+        const range = document.createRange();
+
+        range.selectNodeContents(inputRef.current);
+
+        range.collapse(false);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        inputRef.current.focus();
+    };
+
     return (
         <>
             <footer
@@ -171,6 +191,7 @@ const Footer = () => {
                         <div className="flex-1 min-w-0 flex flex-col">
 
                             <div
+                                onPaste={handlePaste}
                                 ref={inputRef}
                                 contentEditable="true"
                                 onKeyDown={handleKeyDown}

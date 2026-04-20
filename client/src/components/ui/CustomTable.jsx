@@ -5,7 +5,6 @@ import { MdOutlineFileDownload } from "react-icons/md";
 const CustomTable = ({ rows, columns }) => {
     return (
         <div className="w-full rounded-xl border border-slate-200 bg-white shadow-sm">
-            {/* Added overflow-x-auto and a min-width to prevent squishing */}
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-175">
                     <thead>
@@ -28,8 +27,8 @@ const CustomTable = ({ rows, columns }) => {
                                 </td>
                             </tr>
                         ) : (
-                            rows.map((row) => (
-                                <tr key={row.id} className="hover:bg-slate-50/50 transition-colors group">
+                            rows.map((row, index) => (
+                                <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
                                     {columns.map(col => (
                                         <td
                                             key={col.accessor}

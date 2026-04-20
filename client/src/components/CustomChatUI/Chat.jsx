@@ -9,7 +9,6 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
     const messagesEndRef = useRef(null);
     const { activeChat, username, roomId } = useSocketContext();
 
-
     useEffect(() => {
         if (highlightedMessageId) {
             const element = document.getElementById(highlightedMessageId);
