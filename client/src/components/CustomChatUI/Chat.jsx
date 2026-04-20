@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useSocketContext } from "../../contexts/socketContext";
 import { getIcon } from "../../utils/getIcon";
 import { IoSend } from "react-icons/io5";
+import { MdOutlineFileDownload } from "react-icons/md";
 
 const Chat = ({ messages, highlightedMessageId, isTyping }) => {
 
@@ -22,6 +23,10 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
         if (!messagesEndRef.current) return;
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isTyping]);
+
+    const getDownloadUrl = (url) => {
+        return url.replace("/upload/", "/upload/fl_attachment/");
+    };
 
     return (
         <>
@@ -59,9 +64,11 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                                     {msg?.attachments?.length !== 0 && (
                                         <div className="flex flex-wrap gap-2 my-2">
                                             {msg.attachments?.map((attachment, index) => (
-                                                <div
+                                                <a
+                                                    target="_blank"
+                                                    href={attachment.url}
                                                     key={index}
-                                                    className="flex w-70 items-center bg-white border border-slate-200 rounded-lg p-2 pr-1 group animate-in fade-in zoom-in-95 duration-200"
+                                                    className="flex w-70 items-center hover:bg-slate-100 bg-white border border-slate-200 rounded-lg p-2 pr-1 group animate-in fade-in zoom-in-95 duration-200"
                                                 >
                                                     <div className="bg-indigo-600/20 p-2 rounded-md shadow-sm text-indigo-700 mr-2">
                                                         {getIcon(attachment.type.split("/")[0])}
@@ -78,7 +85,11 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                                                             }
                                                         </span>
                                                     </div>
-                                                </div>
+
+                                                    <a href={getDownloadUrl(attachment.url)} download={attachment.name} className="ml-auto p-2 cursor-pointer rounded-full text-slate-500 hover:bg-indigo-50 hover:text-indigo-500 hover:font-semibold transition-colors">
+                                                        <MdOutlineFileDownload size={20} />
+                                                    </a>
+                                                </a>
                                             ))}
                                         </div>
                                     )}

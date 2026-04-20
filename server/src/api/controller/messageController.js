@@ -33,14 +33,13 @@ export const search = async (req, res) => {
 export const uploadFile = async (req, res) => {
     try {
         const files = req.files;
-
+        console.log("req....................................", req)
+        console.log("files....................................", files)
         const uploadedFiles = await Promise.all(
             files.map(async (file) => {
                 const result = await uploadToCloudinary(file.buffer);
-                console.log("result...................................", result);
                 return {
                     url: result.secure_url,
-                    public_id: result.public_id,
                     name: file.originalname,
                     type: result.resource_type,
                     size: result.bytes,

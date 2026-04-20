@@ -8,6 +8,7 @@ import { FaCode } from "react-icons/fa6";
 import CodeEditor from "./CodeEditor";
 import { useRef } from "react";
 import { useSocketContext } from "../../contexts/socketContext";
+import { uploadFiles } from "../../api/message";
 
 const Footer = () => {
 
@@ -58,15 +59,22 @@ const Footer = () => {
 
     }
 
-    const handleSend = (e) => {
+    const handleSend = async (e) => {
         e?.preventDefault();
         const { text, attachments, monaco_editor } = inputValue;
         if (!text?.trim() && !monaco_editor.code?.trim() && attachments.length === 0) return;
 
+        let uploadedFiles = [];
+
+        if(inputValue.attachments.length !== 0) {
+            const res = await uploadFiles(inputValue.attachments);
+            uploadedFiles = res.files;
+        }
+
         socket.emit("sendMessage", {
             roomId,
             text: text.trim(),
-            attachments: inputValue.attachments.map(({ type, name, size }) => ({ type, name, size })),
+            attachments: uploadedFiles,
             monaco_editor,
         });
 

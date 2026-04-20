@@ -7,7 +7,7 @@ const CustomTable = ({ rows, columns }) => {
         <div className="w-full rounded-xl border border-slate-200 bg-white shadow-sm">
             {/* Added overflow-x-auto and a min-width to prevent squishing */}
             <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[700px]">
+                <table className="w-full text-left border-collapse min-w-175">
                     <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-200">
                             {columns.map((col) => (
@@ -88,10 +88,10 @@ const formattedValue = (value, accessor) => {
         case "url":
             return (
                 <div className="flex justify-end ">
-                    <button className="flex p-2 gap-1 cursor-pointer hover:bg-indigo-50 rounded-sm border border-slate-400 hover:border-indigo-500 hover:text-indigo-500 hover:font-semibold transition-colors">
+                    <a href={value.replace("/upload/", "/upload/fl_attachment/")} className="flex p-2 gap-1 cursor-pointer hover:bg-indigo-50 rounded-sm border border-slate-400 hover:border-indigo-500 hover:text-indigo-500 hover:font-semibold transition-colors">
                         <MdOutlineFileDownload size={18} />
                         <span>Download</span>
-                    </button>
+                    </a>
                 </div>
             );
 
