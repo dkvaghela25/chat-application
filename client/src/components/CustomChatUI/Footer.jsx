@@ -204,7 +204,6 @@ const Footer = () => {
                     <div className='flex flex-wrap items-end gap-2'>
 
                         <div className="flex-1 min-w-0 flex flex-col">
-
                             <div
                                 onPaste={handlePaste}
                                 ref={inputRef}
@@ -212,9 +211,7 @@ const Footer = () => {
                                 onKeyDown={handleKeyDown}
                                 className="bg-transparent empty:before:content-['Type_something...'] empty:before:text-gray-400 resize-none [&::-webkit-scrollbar]:w-1.5 max-h-50 outline-none text-sm text-slate-700 placeholder-slate-400 py-2 overflow-x-auto"
                             />
-
                             {isCodeEditorMode && <CodeEditor monaco_editor={inputValue.monaco_editor} setInputValue={setInputValue} setIsCodeEditorMode={setIsCodeEditorMode} />}
-
                         </div>
 
                         <div className='ml-auto flex shrink-0 items-center gap-1 text-slate-900 font-black'>
@@ -226,7 +223,7 @@ const Footer = () => {
                             <button
                                 type="submit"
                                 className={`p-2 rounded-lg  border-l disabled:cursor-not-allowed disabled:text-slate-400 border-slate-200 pl-3 transition-colors text-slate-700 hover:text-indigo-700`}
-                                disabled={ isLoading || (!inputValue?.text?.trim() && !inputValue?.monaco_editor?.code?.trim() && inputValue.attachments.length === 0)}
+                                disabled={isLoading || (!inputRef?.current?.innerText.trim() && !inputValue?.monaco_editor?.code?.trim() && inputValue.attachments.length === 0)}
                             >
                                 <IoSend size={18} />
                             </button>

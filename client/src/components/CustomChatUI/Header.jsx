@@ -40,6 +40,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
     }, [searchInput]);
 
     const highlightMessage = (messageId) => {
+        
         setHighlightedMessageId(messageId);
         setDisplayId(false);
         setSearchInput("");
@@ -98,7 +99,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
                             </button>}
                             {displayId === "search-modal" && activeChat && (
                                 <>
-                                    <div className="absolute top-10 right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[400px] p-4 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200 z-30 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="absolute top-10 right-0 mt-2 w-[calc(100vw-2rem)] sm:w-100 p-4 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200 z-30 animate-in fade-in zoom-in-95 duration-200">
                                         <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
                                             <span className="text-sm font-bold uppercase tracking-wider text-slate-500">Find in chat</span>
                                             <button
@@ -134,9 +135,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
                                                                 {new Date(msg.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                                             </span>
                                                         </div>
-                                                        <p className="text-sm text-slate-600 line-clamp-2 leading-snug">
-                                                            {msg.text}
-                                                        </p>
+                                                        <div className="text-sm text-slate-600 line-clamp-2 leading-snug" dangerouslySetInnerHTML={{ __html: msg.text }} />
                                                         {msg.attachments?.length > 0 && (
                                                             <div className="mt-2 text-[10px] font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-1">
                                                                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>

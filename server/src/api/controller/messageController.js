@@ -29,7 +29,6 @@ export const search = async (req, res) => {
     }
 };
 
-
 export const uploadFile = async (req, res) => {
     try {
         const files = req.files;
@@ -41,7 +40,7 @@ export const uploadFile = async (req, res) => {
                 return {
                     url: result.secure_url,
                     name: file.originalname,
-                    type: result.resource_type,
+                    type: result.format || result.resource_type,
                     size: result.bytes,
                 };
             })

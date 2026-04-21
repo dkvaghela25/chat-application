@@ -32,8 +32,9 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
 
     const fetchOptions = () => {
         try {
-            setIsLoading(true);
             const handler = setTimeout(async () => {
+                setIsLoading(true);
+                
                 const res = searchInput.trim()
                     ? await searchUser(searchInput)
                     : await fetchAllUser();
@@ -48,10 +49,12 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                         .filter((user) => (user.username !== username && !existingMembers.includes(user.username)))
 
                     setOptions(filtered);
+                    
+                    setIsLoading(false);
                 }
-                setIsLoading(false);
+                
             }, 300);
-
+            
             return () => clearTimeout(handler);
         } catch (error) {
             toast(error.message)

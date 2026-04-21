@@ -3,6 +3,7 @@ import { useSocketContext } from "../../contexts/socketContext";
 import { getIcon } from "../../utils/getIcon";
 import { IoSend } from "react-icons/io5";
 import { MdOutlineFileDownload } from "react-icons/md";
+import CodeEditor from "./CodeEditor";
 
 const Chat = ({ messages, highlightedMessageId, isTyping }) => {
 
@@ -53,7 +54,7 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                                     {isMe ? 'You' : activeChat?.isGroup ? msg.sender : activeChat?.name}
                                 </span>
                                 <div
-                                    className={`px-4 py-2.5 rounded-2xl max-w-[80%] shadow-sm transition-all duration-500
+                                    className={`px-4 py-2.5 rounded-2xl max-w-[82%] shadow-sm transition-all duration-500
                                         ${isHighlighted ? 'ring-2 ring-red-400 ring-opacity-50 animate-highlight shadow-xl' : ''}
                                         ${isMe
                                             ? `${isHighlighted ? 'bg-indigo-500' : 'bg-indigo-600'} text-white rounded-tr-none`
