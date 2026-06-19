@@ -87,7 +87,7 @@ const UsersList = () => {
 
                         <button
                             onClick={() => setIsGroupModalOpen(true)}
-                            className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-indigo-200 flex items-center justify-center group"
+                            className="cursor-pointer p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-indigo-200 flex items-center justify-center group"
                             title="Start New Chat"
                         >
                             <RiChatNewLine className="h-5 w-5 group-hover:scale-110 transition-transform" />

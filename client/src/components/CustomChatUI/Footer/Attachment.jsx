@@ -21,11 +21,11 @@ const Attachment = ({ setInputValue }) => {
     ]
 
     return (
-        <div className="relative flex items-center">
+        <div className="cursor-pointer relative flex items-center">
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`p-2 rounded-full transition-all duration-200 ${isOpen
+                className={`cursor-pointer  p-2 rounded-full transition-all duration-200 ${isOpen
                     ? 'bg-indigo-100 text-indigo-600'
                     : 'text-slate-700 hover:bg-slate-200'
                     }`}
@@ -57,7 +57,7 @@ const AttachmentOption = ({ handleChange, icon, label, color, bgColor, accept })
 
     return (
         <>
-            <label htmlFor="file-upload" onClick={() => setShowInput(true)} className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${bgColor} ${color}`}>
+            <label htmlFor="file-upload" onClick={() => setShowInput(true)} className={`flex flex-col cursor-pointer items-center justify-center p-3 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${bgColor} ${color}`}>
                 <div className="mb-1">{icon}</div>
                 <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{label}</span>
             </label>

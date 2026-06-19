@@ -1,5 +1,5 @@
 import Header from './Header';
-import Footer from './Footer';
+import Footer from './Footer/Footer';
 import NothingHere from './NothingHere';
 import { useSocketContext } from '../../contexts/socketContext';
 import { useEffect, useState } from 'react';

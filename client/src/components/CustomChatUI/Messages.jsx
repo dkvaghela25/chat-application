@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { IoSend } from "react-icons/io5";
-import CodeEditor from "./CodeEditor";
+import CodeEditor from "./Footer/CodeEditor";
 import { useSocketContext } from "../../contexts/socketContext";
 import Chat from "./Chat";
 import Attachments from "./Attachments";

@@ -15,7 +15,7 @@ const Emoji = ({ inputRef }) => {
     return (
         <div className="relative inline-block">
             <div
-                className='p-2 rounded-full transition-all duration-200 hover:bg-slate-200'
+                className='cursor-pointer  p-2 rounded-full transition-all duration-200 hover:bg-slate-200'
                 onClick={() => setShowPicker(!showPicker)}
             >
                 <BsEmojiSmile size={20} />

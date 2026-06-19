@@ -170,7 +170,7 @@ const RegistrationPage = () => {
                     </div>
 
                     <div className="md:col-span-2 pt-2">
-                        <button className={`w-full text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-2 ${loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"}`}>
+                        <button className={`cursor-pointer w-full text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-2 ${loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"}`}>
                             {loading ? "Registering ..." : "Register"}
                         </button>
                         <div className="text-center mt-6">

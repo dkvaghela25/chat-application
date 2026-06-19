@@ -10,7 +10,7 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
 
     const [searchInput, setSearchInput] = useState("");
     const [options, setOptions] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [chatType, setChatType] = useState(groupDetails ? "group-chat" : "private-chat");
     const [selectedMembers, setSelectedMembers] = useState([]);
@@ -34,7 +34,7 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
         try {
             const handler = setTimeout(async () => {
                 setIsLoading(true);
-                
+
                 const res = searchInput.trim()
                     ? await searchUser(searchInput)
                     : await fetchAllUser();
@@ -49,12 +49,12 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                         .filter((user) => (user.username !== username && !existingMembers.includes(user.username)))
 
                     setOptions(filtered);
-                    
+
                     setIsLoading(false);
                 }
-                
+
             }, 300);
-            
+
             return () => clearTimeout(handler);
         } catch (error) {
             toast(error.message)
@@ -63,6 +63,7 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
     }
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchOptions();
     }, [searchInput, username, groupDetails, chatType]);
 
@@ -123,13 +124,13 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                 <div className="p-6 space-y-4">
 
                     {!groupDetails && <div className="flex gap-5 sm:gap-10">
-                        <div className="flex gap-2">
+                        <div className="cursor-pointer flex gap-2">
                             <input className="accent-indigo-500" name="chat-type" id="private-chat" type="radio" value="private-chat" checked={chatType === "private-chat"} onChange={(e) => setChatType(e.target.value)} />
-                            <label htmlFor="private-chat">Private Chat</label>
+                            <label className="cursor-pointer" htmlFor="private-chat">Private Chat</label>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="cursor-pointer flex gap-2">
                             <input className="accent-indigo-500" name="chat-type" id="group-chat" type="radio" value="group-chat" checked={chatType === "group-chat"} onChange={(e) => setChatType(e.target.value)} />
-                            <label htmlFor="group-chat">Group Chat</label>
+                            <label className="cursor-pointer" htmlFor="group-chat">Group Chat</label>
                         </div>
                     </div>}
 
@@ -149,25 +150,25 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
 
                     <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
                         <div className="max-h-40 overflow-y-auto  [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 divide-y divide-slate-50 custom-scrollbar">
-                            {options.map(user => (
-                                <label key={user.username} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer group">
-                                    <input
-                                        type={chatType === "group-chat" ? "checkbox" : "radio"}
-                                        checked={selectedMembers.some(m => m.username === user.username)}
-                                        onChange={() => handleSelectedMembersChange(user)}
-                                        className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                                    />
-                                    <div className="text-sm">
-                                        <p className="font-medium text-slate-700">{user.name}</p>
-                                        <p className="text-xs text-slate-400">@{user.username}</p>
-                                    </div>
-                                </label>
-                            ))}
-                            {options.length === 0 &&
-                                !isLoading
-                                ? <p className="p-4 text-center text-xs text-slate-400">No users found</p>
-                                : <div className="flex justify-center py-5"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" /></div>
-                            }
+                            {isLoading
+                                ? <div className="flex justify-center py-5"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" /></div>
+                                : options.length === 0
+                                    ? <p className="p-4 text-center text-xs text-slate-400">No users found</p>
+                                    : options.map(user => (
+                                        <label key={user.username} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer group">
+                                            <input
+                                                type={chatType === "group-chat" ? "checkbox" : "radio"}
+                                                checked={selectedMembers.some(m => m.username === user.username)}
+                                                onChange={() => handleSelectedMembersChange(user)}
+                                                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                            />
+                                            <div className="text-sm">
+                                                <p className="font-medium text-slate-700">{user.name}</p>
+                                                <p className="text-xs text-slate-400">@{user.username}</p>
+                                            </div>
+                                        </label>
+                                    ))}
+
                         </div>
                     </div>
 
@@ -192,10 +193,10 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                 </div>
 
                 <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-                    <button type="button" onClick={() => setIsGroupModalOpen(false)} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800">
+                    <button type="button" onClick={() => setIsGroupModalOpen(false)} className="cursor-pointer border border-slate-300 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800">
                         Cancel
                     </button>
-                    <button type="submit" className="px-6 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 shadow-md transition-all active:scale-95">
+                    <button type="submit" className="cursor-pointer px-6 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 shadow-md transition-all active:scale-95">
                         {groupDetails ? "Add Members" : "Start Chat"}
                     </button>
                 </div>

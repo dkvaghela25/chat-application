@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FaCode } from "react-icons/fa6";
 import { IoMdClose } from "react-icons/io";
 import { MdOutlineContentCopy } from "react-icons/md";
-import { useSocketContext } from "../../contexts/socketContext";
+import { useSocketContext } from "../../../contexts/socketContext";
 import { useRef } from "react";
 
 const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCodeEditorMode }) => {
@@ -108,7 +108,7 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
                                 <MdOutlineContentCopy size={18} />
                             </button>
                             : <button
-                                className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 text-slate-400 transition-all"
+                                className="p-1.5 cursor-pointer rounded-lg hover:bg-red-50 hover:text-red-500 text-slate-400 transition-all"
                                 type="button"
                                 onClick={handleClose}
                             >

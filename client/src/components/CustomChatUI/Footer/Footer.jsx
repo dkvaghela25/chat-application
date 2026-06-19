@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import Attachment from "../Icons/Attachment";
-import Emoji from "../Icons/Emoji"
+import Attachment from "./Attachment";
+import Emoji from "./Emoji"
 import { IoSend } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
-import { getIcon } from "../../utils/getIcon";
+import { getIcon } from "../../../utils/getIcon";
 import { FaCode } from "react-icons/fa6";
 import CodeEditor from "./CodeEditor";
 import { useRef } from "react";
-import { useSocketContext } from "../../contexts/socketContext";
-import { uploadFiles } from "../../api/message";
+import { useSocketContext } from "../../../contexts/socketContext";
+import { uploadFiles } from "../../../api/message";
 import { toast } from "react-toastify";
 
 const Footer = () => {
@@ -215,15 +215,15 @@ const Footer = () => {
                         </div>
 
                         <div className='ml-auto flex shrink-0 items-center gap-1 text-slate-900 font-black'>
-                            <button type="button" onClick={() => setIsCodeEditorMode(prev => !prev)} className='p-2 rounded-full transition-all duration-200 hover:bg-slate-200' >
+                            <button type="button" onClick={() => setIsCodeEditorMode(prev => !prev)} className='cursor-pointer p-2 rounded-full transition-all duration-200 hover:bg-slate-200' >
                                 <FaCode size={18} />
                             </button>
                             <Emoji inputRef={inputRef} />
                             <Attachment setInputValue={setInputValue} />
                             <button
                                 type="submit"
-                                className={`p-2 rounded-lg  border-l disabled:cursor-not-allowed disabled:text-slate-400 border-slate-200 pl-3 transition-colors text-slate-700 hover:text-indigo-700`}
-                                disabled={isLoading || (!inputRef?.current?.innerText.trim() && !inputValue?.monaco_editor?.code?.trim() && inputValue.attachments.length === 0)}
+                                className={`cursor-pointer p-2 rounded-lg  border-l disabled:cursor-not-allowed disabled:text-slate-400 border-slate-200 pl-3 transition-colors text-slate-700 hover:text-indigo-700`}
+                                disabled={isLoading || (!inputValue.text.trim() && !inputValue?.monaco_editor?.code?.trim() && inputValue.attachments.length === 0)}
                             >
                                 <IoSend size={18} />
                             </button>
