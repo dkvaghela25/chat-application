@@ -1,5 +1,7 @@
 import { sendError } from "../../helper/sendError.js";
-import Room from "../../models/Room.js"
+import { RequestInputError } from "../../helper/errors.js";
+import { serializeRoom } from "../../helper/serializers.js";
+import Room from "../../models/Room.js";
 
 export const roomDetails = async (req, res) => {
   try {
@@ -9,24 +11,12 @@ export const roomDetails = async (req, res) => {
       throw new RequestInputError("Room ID is required", 400);
     }
 
-    const room = await Room.aggregate([
-      { $match: { roomId } },
-      {
-        $lookup: {
-          from: "users",
-          localField: "members",
-          foreignField: "username",
-          as: "members",
-          pipeline: [
-            {
-              $project: { _id: 0, name: 1, username: 1 },
-            },
-          ],
-        },
-      },
-    ]);
+    const room = await Room.findOne({ roomId })
+      .populate("members", "name username online")
+      .populate("admin", "username")
+      .lean();
 
-    if (!room.length) {
+    if (!room) {
       return res.status(404).json({
         success: false,
         message: "Room not found",
@@ -36,7 +26,7 @@ export const roomDetails = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Room details fetched successfully",
-      roomDetails: room[0],
+      roomDetails: serializeRoom(room),
     });
 
   } catch (err) {

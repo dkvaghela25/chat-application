@@ -5,7 +5,7 @@ import { sendError } from "../../helper/sendError.js";
 
 export const allUsers = async (req, res) => {
     try {
-        const users = await User.find({}, { name: 1, username: 1, _id: 0 });
+        const users = await User.find({}, { name: 1, username: 1, _id: 0 }).lean();
 
         res.status(200).json({
             success: true,
@@ -30,7 +30,7 @@ export const search = async (req, res) => {
                 name: { $regex: searchInput, $options: "i" },
             },
             { name: 1, username: 1, _id: 0 }
-        ).limit(20); // prevent heavy load
+        ).limit(20).lean(); // prevent heavy load
 
         res.status(200).json({
             success: true,
@@ -50,16 +50,31 @@ export const connectedUsers = async (req, res) => {
             throw new RequestInputError("Current user is required", 400);
         }
 
-        const rooms = await Room.find({ members: currentUser });
+        const user = await User.findOne({ username: currentUser })
+            .select("_id username")
+            .lean();
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const rooms = await Room.find({ members: user._id })
+            .select("members")
+            .lean();
 
         const uniqueUsernames = [
             ...new Set(rooms.flatMap((room) => room.members)),
-        ].filter((u) => u !== currentUser); // remove self
+        ]
+            .map((member) => String(member))
+            .filter((memberId) => memberId !== String(user._id));
 
         const users = await User.find(
-            { username: { $in: uniqueUsernames } },
+            { _id: { $in: uniqueUsernames } },
             { name: 1, username: 1, _id: 0 }
-        );
+        ).lean();
 
         res.status(200).json({
             success: true,
@@ -82,7 +97,7 @@ export const userDetails = async (req, res) => {
         const user = await User.findOne(
             { username },
             { name: 1, username: 1, email: 1, createdAt: 1 }
-        );
+        ).lean();
 
         if (!user) {
             return res.status(404).json({

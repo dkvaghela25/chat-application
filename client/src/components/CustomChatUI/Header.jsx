@@ -52,6 +52,8 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
 
     }
 
+    const getSenderUsername = (sender) => typeof sender === "object" ? sender?.username : sender;
+
     if (!activeChat) return null;
 
     return (
@@ -129,7 +131,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
                                                     >
                                                         <div className="flex justify-between items-center mb-1.5">
                                                             <span className="text-xs font-bold text-slate-700 group-hover:text-indigo-700 transition-colors">
-                                                                {msg.sender === activeChat?.name ? msg.sender : (msg.sender === username ? "You" : msg.sender)}
+                                                                {getSenderUsername(msg.sender) === username ? "You" : getSenderUsername(msg.sender)}
                                                             </span>
                                                             <span className="text-[10px] font-medium text-slate-400">
                                                                 {new Date(msg.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}

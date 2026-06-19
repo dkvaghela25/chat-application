@@ -4,7 +4,8 @@ const messageSchema = new mongoose.Schema(
   {
 
     sender: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
 
@@ -48,5 +49,8 @@ const messageSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+messageSchema.index({ roomId: 1, createdAt: -1 });
+messageSchema.index({ sender: 1 });
 
 export default mongoose.model("Message", messageSchema);

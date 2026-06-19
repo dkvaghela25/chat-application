@@ -11,6 +11,8 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
     const messagesEndRef = useRef(null);
     const { activeChat, username, roomId } = useSocketContext();
 
+    const getSenderUsername = (sender) => typeof sender === "object" ? sender?.username : sender;
+
     useEffect(() => {
         if (highlightedMessageId) {
             const element = document.getElementById(highlightedMessageId);
@@ -38,7 +40,8 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                     </div>
                 ) : (
                     messages.map((msg, index) => {
-                        const isMe = msg.sender === username;
+                        const senderUsername = getSenderUsername(msg.sender);
+                        const isMe = senderUsername === username;
                         const isHighlighted = highlightedMessageId === msg._id;
 
                         return (
@@ -48,7 +51,7 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                                 className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                             >
                                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-2">
-                                    {isMe ? 'You' : activeChat?.isGroup ? msg.sender : activeChat?.name}
+                                    {isMe ? 'You' : activeChat?.isGroup ? senderUsername : activeChat?.name}
                                 </span>
                                 <div
                                     className={`px-4 py-2.5 rounded-2xl max-w-[82%] shadow-sm transition-all duration-500

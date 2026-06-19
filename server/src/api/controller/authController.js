@@ -18,17 +18,20 @@ export const register = async (req, res) => {
       throw new ValidationError(validationResult.message, 400);
     }
 
-    const existingEmail = await User.findOne({ email });
-    const existingUsername = await User.findOne({ username });
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }],
+    })
+      .select("email username")
+      .lean();
 
-    if (existingUsername) {
+    if (existingUser?.username === username) {
       return res.status(409).json({
         success: false,
         message: "Username is already taken",
       });
     }
     
-    if (existingEmail) {
+    if (existingUser?.email === email) {
       return res.status(409).json({
         success: false,
         message: "Email Id is already in use",

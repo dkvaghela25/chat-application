@@ -2,6 +2,7 @@ import Message from "../../models/Message.js";
 import { RequestInputError } from "../../helper/errors.js";
 import { sendError } from "../../helper/sendError.js";
 import { uploadToCloudinary } from "../../helper/uploadToCloudinary.js";
+import { serializeMessage } from "../../helper/serializers.js";
 
 export const search = async (req, res) => {
     try {
@@ -17,12 +18,16 @@ export const search = async (req, res) => {
                 { text: { $regex: searchInput, $options: "i" } },
                 { "monaco_editor.code": { $regex: searchInput, $options: "i" } }
             ]
-        }).limit(20);
+        })
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .populate("sender", "name username")
+            .lean();
 
         res.status(200).json({
             success: true,
             message: "Messages fetched successfully",
-            messages,
+            messages: messages.map(serializeMessage),
         });
     } catch (err) {
         sendError(res, err);
