@@ -2,10 +2,11 @@ import Room from "../../models/Room.js";
 import User from "../../models/User.js";
 import { RequestInputError } from "../../helper/errors.js";
 import { sendError } from "../../helper/sendError.js";
+import { serializeRoom } from "../../helper/serializers.js";
 
 export const allUsers = async (req, res) => {
     try {
-        const users = await User.find({}, { name: 1, username: 1, _id: 0 }).lean();
+        const users = await User.find({}, { name: 1, username: 1 }).lean();
 
         res.status(200).json({
             success: true,
@@ -29,8 +30,8 @@ export const search = async (req, res) => {
             {
                 name: { $regex: searchInput, $options: "i" },
             },
-            { name: 1, username: 1, _id: 0 }
-        ).limit(20).lean(); // prevent heavy load
+            { name: 1, username: 1 }
+        ).lean();
 
         res.status(200).json({
             success: true,
@@ -165,8 +166,6 @@ export const conversationList = async (req, res) => {
                 };
             })
             .filter(Boolean)
-
-        console.log("🚀 ~ conversationList ~ finalConversationList:", finalConversationList)
 
         return res.status(200).json({
             success: true,

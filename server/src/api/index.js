@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.use("/auth", authRouter);
 router.use("/user", protect, userRouter);
-router.use("/room", roomRouter);
-router.use("/message", messageRouter);
+router.use("/room", protect, roomRouter);
+router.use("/message", protect, messageRouter);
 
 export default router;

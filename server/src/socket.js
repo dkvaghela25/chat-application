@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import User from "./models/User.js";
 import Message from "./models/Message.js";
 import Room from "./models/Room.js";
+import jwt from "jsonwebtoken";
 import { serializeMessage } from "./helper/serializers.js";
 
 export const initSocket = (server) => {
@@ -18,121 +19,89 @@ export const initSocket = (server) => {
 
     const roomHasMember = (room, userId) => Boolean(room?.members?.some((member) => String(member?._id ?? member) === String(userId)));
 
-    const resolveUsersByUsernames = async (usernames = []) => {
-        const uniqueUsernames = [...new Set(usernames.filter(Boolean))];
-        if (uniqueUsernames.length === 0) return [];
-
-        return User.find({ username: { $in: uniqueUsernames } })
-            .select(getUserProjection)
-            .lean();
-    };
-
     const loadRoom = (roomId) => Room.findOne({ roomId })
         .populate("members", "name username online")
         .populate("admin", "username")
         .lean();
 
-    const buildConversationList = async (currentUser) => {
-        if (!currentUser?._id) return [];
-
-        const rooms = await Room.find({ members: currentUser._id })
-            .sort({ updatedAt: -1 })
-            .populate("members", "name username online")
-            .populate("admin", "username")
+    const getImpactedUsersRoomId = async (userId) => {
+        const rooms = await Room.find({ members: userId, isGroup: false })
+            .select("members")
             .lean();
 
-        const directUserIds = [...new Set(
-            rooms
-                .filter((room) => !room.isGroup)
-                .flatMap((room) => room.members)
-                .map((member) => String(member._id))
-                .filter((memberId) => {
-                    return memberId !== String(currentUser._id);
-                })
-        )];
+        return rooms;
+    };
 
-        const directUsers = await User.find({ _id: { $in: directUserIds } })
-            .select("name username online")
-            .lean();
-        const directUserMap = new Map(directUsers.map((user) => [String(user._id), user]));
+    const emitUserStatusToUsers = async ({
+        userId,
+        online,
+    }) => {
 
-        const finalConversationList = rooms
-            .map((room) => {
-                if (room.isGroup) {
-                    return serializeRoom(room, currentUser._id);
-                }
+        const impactedUsersRooms = await getImpactedUsersRoomId(userId);
 
-                const otherUserId = room.members
-                    .map((member) => String(member._id))
-                    .find((memberId) => memberId !== String(currentUser._id));
+        impactedUsersRooms
+            .forEach(({ _id: roomId, members }) => {
+                members
+                    .filter((memberId) => String(memberId) !== String(userId))
+                    .forEach((memberId) => {
+                        console.count("Emitting userStatusChanged to");
+                        io.to(`user:${memberId}`).emit("userStatusChanged", { roomId, online });
+                    });
+            });
+    };
 
-                if (!otherUserId) return null;
+    const emitNewGroupCreatedToUsers = async (userIds = [], room) => {
 
-                const otherUser = directUserMap.get(otherUserId);
-                return {
-                    _id: room._id,
+        userIds
+            .forEach((userId) => {
+                io.to(`user:${userId}`).emit("newGroupCreated", {
                     roomId: room.roomId,
-                    isGroup: false,
-                    name: otherUser?.name || otherUser?.username || otherUserId,
-                    username: otherUser?.username || otherUserId,
-                    online: Boolean(otherUser?.online),
-                };
-            })
-            .filter(Boolean)
+                    isGroup: true,
+                    name: room.name,
+                    members: room.members,
+                });
+            });
+    }
 
-        return finalConversationList;
-    };
+    io.use((socket, next) => {
+        try {
+            const token = socket.handshake.auth.token;
 
-    const emitConversationListToUser = async (user) => {
-        if (!user?.socketId) return;
+            const decoded = jwt.verify(
+                token,
+                process.env.JWT_SECRET
+            );
 
-        const conversationList = await buildConversationList(user);
-        console.log("🚀 ~ emitConversationListToUser ~ conversationList:", conversationList)
-        io.to(user.socketId).emit("conversationList", conversationList);
-    };
+            socket.userId = decoded.userId;
 
-    const emitConversationListToUsers = async (userIds = []) => {
-        const uniqueUserIds = [...new Set(userIds.map((userId) => String(userId)).filter(Boolean))];
-        if (uniqueUserIds.length === 0) return;
+            next();
+        } catch (err) {
+            next(new Error("Unauthorized"));
+        }
+    });
 
-        const users = await User.find({ _id: { $in: uniqueUserIds } })
-            .select(getUserProjection)
-            .lean();
-
-        await Promise.all(users.map((user) => emitConversationListToUser(user)));
-    };
-
-    io.on("connection", (socket) => {
+    io.on("connection", async (socket) => {
         console.log("✅ User connected:", socket.id);
 
-        socket.on("join", async (username) => {
-            try {
-                const currentUser = await User.findOneAndUpdate(
-                    { username },
-                    { socketId: socket.id, online: true },
-                    { new: true }
-                )
-                    .select(getUserProjection)
-                    .lean();
+        const currentUser =
+            await User.findByIdAndUpdate(
+                socket.userId,
+                { socketId: socket.id, online: true, },
+                { new: true }
+            );
 
-                if (!currentUser?._id) return;
+        if (!currentUser) {
+            socket.disconnect();
+            return;
+        }
 
-                socket.username = currentUser.username;
-                socket.userId = currentUser._id;
+        socket.username = currentUser.username;
 
-                const rooms = await Room.find({ members: currentUser._id })
-                    .select("members")
-                    .lean();
+        socket.join(`user:${currentUser._id}`);
 
-                const impactedUsers = [...new Set(rooms.flatMap((room) => room.members.map((member) => String(member))))];
-                // await emitConversationListToUsers(impactedUsers);
+        await emitUserStatusToUsers({ userId: currentUser._id, online: true });
 
-            } catch (err) {
-                console.error("Join Error:", err.message);
-            }
-        });
-
-        socket.on("joinRoom", async ({ receiver, roomId }) => {
+        socket.on("joinRoom", async ({ receiverId, roomId }) => {
             try {
                 const senderId = socket.userId;
                 const senderUsername = socket.username;
@@ -140,22 +109,24 @@ export const initSocket = (server) => {
 
                 let room = null;
 
-                if (receiver) {
-                    const receiverUser = await User.findOne({ username: receiver })
+                if (receiverId) {
+
+                    const receiverUser = await User.findOne({ _id: receiverId })
                         .select(getUserProjection)
                         .lean();
 
-                    if (!receiverUser?._id) return;
+                    if (!receiverUser) return;
 
-                    const directRoomId = senderUsername === receiver ? senderUsername : [senderUsername, receiver].sort().join("_");
+                    const directRoomId = [senderUsername, receiverUser.username].sort().join("_");
                     room = await loadRoom(directRoomId);
                     if (!room) {
                         room = await Room.create({
                             roomId: directRoomId,
-                            members: senderUsername === receiver ? [senderId] : [senderId, receiverUser._id],
+                            members: [senderId, receiverUser._id],
                             isGroup: false,
                         });
                         room = await loadRoom(directRoomId);
+                        socket.emit("newChatStarted", room.members.find((member) => String(member._id) !== String(senderId)));
                     }
                 } else if (roomId) {
                     room = await loadRoom(roomId);
@@ -184,8 +155,6 @@ export const initSocket = (server) => {
                     });
                 }
 
-                await emitConversationListToUsers(room.members.map((member) => member._id ?? member));
-
             } catch (err) {
                 console.error("Join Room Error:", err.message);
             }
@@ -197,8 +166,7 @@ export const initSocket = (server) => {
                 const adminUsername = socket.username;
                 if (!adminId || !adminUsername) return;
 
-                const memberDocs = await resolveUsersByUsernames([adminUsername, ...members]);
-                const memberIds = [...new Set(memberDocs.map((member) => String(member._id)))];
+                const memberIds = [adminId, ...members];
                 if (!groupName?.trim() || memberIds.length < 2) return;
 
                 const room = await Room.create({
@@ -221,7 +189,7 @@ export const initSocket = (server) => {
                     members: populatedRoom.members,
                 });
 
-                await emitConversationListToUsers(memberIds);
+                await emitNewGroupCreatedToUsers(memberIds, populatedRoom);
 
             } catch (err) {
                 console.error("Create Group Error:", err.message);
@@ -257,8 +225,6 @@ export const initSocket = (server) => {
                     name: room.name,
                     members: [...room.members, ...memberDocs],
                 });
-
-                await emitConversationListToUsers([...room.members.map((member) => member._id), ...memberIds]);
 
             } catch (err) {
                 console.error("Create Group Error:", err.message);
@@ -338,7 +304,6 @@ export const initSocket = (server) => {
                     .populate("sender", "name username")
                     .lean();
 
-                console.log("🚀 ~ initSocket ~ serializeMessage(populatedMessage):", serializeMessage(populatedMessage))
                 io.to(roomId).emit("receiveMessage", serializeMessage(populatedMessage));
 
                 await emitConversationListToUsers(room.members);
@@ -376,7 +341,7 @@ export const initSocket = (server) => {
         socket.on("disconnect", async () => {
             try {
                 const disconnectedUser = await User.findOneAndUpdate(
-                    { socketId: socket.id },
+                    { _id: socket.userId },
                     { online: false },
                     { new: true }
                 )
@@ -393,7 +358,7 @@ export const initSocket = (server) => {
                     ...rooms.flatMap((room) => room.members.map((member) => String(member))),
                 ];
 
-                await emitConversationListToUsers(impactedUsers);
+                await emitUserStatusToUsers({ userId: currentUser._id, online: false });
 
             } catch (err) {
                 console.error("Disconnect Error:", err.message);
