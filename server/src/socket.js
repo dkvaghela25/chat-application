@@ -87,6 +87,7 @@ export const initSocket = (server) => {
         if (!user?.socketId) return;
 
         const conversationList = await buildConversationList(user);
+        console.log("🚀 ~ emitConversationListToUser ~ conversationList:", conversationList)
         io.to(user.socketId).emit("conversationList", conversationList);
     };
 
@@ -124,7 +125,7 @@ export const initSocket = (server) => {
                     .lean();
 
                 const impactedUsers = [...new Set(rooms.flatMap((room) => room.members.map((member) => String(member))))];
-                await emitConversationListToUsers(impactedUsers);
+                // await emitConversationListToUsers(impactedUsers);
 
             } catch (err) {
                 console.error("Join Error:", err.message);

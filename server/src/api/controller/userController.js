@@ -115,3 +115,66 @@ export const userDetails = async (req, res) => {
         sendError(res, err);
     }
 };
+
+export const conversationList = async (req, res) => {
+    try {
+        const { userId } = req;
+        if (!userId) return [];
+
+        const rooms = await Room.find({ members: userId })
+            .sort({ updatedAt: -1 })
+            .populate("members", "name username online")
+            .populate("admin", "username")
+            .lean();
+
+        const directUserIds = [...new Set(
+            rooms
+                .filter((room) => !room.isGroup)
+                .flatMap((room) => room.members)
+                .map((member) => String(member._id))
+                .filter((memberId) => {
+                    return memberId !== String(userId);
+                })
+        )];
+
+        const directUsers = await User.find({ _id: { $in: directUserIds } })
+            .select("name username online")
+            .lean();
+        const directUserMap = new Map(directUsers.map((user) => [String(user._id), user]));
+
+        const finalConversationList = rooms
+            .map((room) => {
+                if (room.isGroup) {
+                    return serializeRoom(room, userId);
+                }
+
+                const otherUserId = room.members
+                    .map((member) => String(member._id))
+                    .find((memberId) => memberId !== String(userId));
+
+                if (!otherUserId) return null;
+
+                const otherUser = directUserMap.get(otherUserId);
+                return {
+                    _id: room._id,
+                    roomId: room.roomId,
+                    isGroup: false,
+                    name: otherUser?.name || otherUser?.username || otherUserId,
+                    username: otherUser?.username || otherUserId,
+                    online: Boolean(otherUser?.online),
+                };
+            })
+            .filter(Boolean)
+
+        console.log("🚀 ~ conversationList ~ finalConversationList:", finalConversationList)
+
+        return res.status(200).json({
+            success: true,
+            message: "Conversation list fetched successfully",
+            conversationList: finalConversationList,
+        });
+
+    } catch (err) {
+        sendError(res, err);
+    }
+}
