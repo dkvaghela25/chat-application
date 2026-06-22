@@ -49,9 +49,13 @@ const LoginPage = () => {
             if (res.success) {
 
                 setUsername(res.username);
-                localStorage.setItem("token", res.token); 
+                localStorage.setItem("token", res.token);
 
                 if (!socket.connected) {
+                    // eslint-disable-next-line react-hooks/immutability
+                    socket.auth = {
+                        token: res.token
+                    };
                     socket.connect();
                 }
 

@@ -42,11 +42,11 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                 if (res.success) {
 
                     const existingMembers = chatType === "group-chat"
-                        ? groupDetails?.members?.map(m => m.username) || []
-                        : conversationList.map(u => u.username) || [];
+                        ? groupDetails?.members?.map(m => m._id) || []
+                        : conversationList.map(u => u._id) || [];
 
                     const filtered = res.users
-                        .filter((user) => (user.username !== username && !existingMembers.includes(user.username)))
+                        .filter((user) => (user.username !== username && !existingMembers.includes(user._id)))
 
                     setOptions(filtered);
 
@@ -72,9 +72,9 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
     }
 
     const handleCheckboxChange = (user) => {
-        const isSelected = selectedMembers.some(m => m.username === user.username);
+        const isSelected = selectedMembers.some(m => m._id === user._id);
         if (isSelected) {
-            setSelectedMembers(prev => prev.filter(m => m.username !== user.username));
+            setSelectedMembers(prev => prev.filter(m => m._id !== user._id));
         } else {
             setSelectedMembers(prev => [...prev, user]);
         }
@@ -97,16 +97,17 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
         e.preventDefault();
         if (!validateForm()) return;
 
-        const memberUsernames = selectedMembers.map(m => m.username);
+        const memberIds = selectedMembers.map(m => m._id);
 
         if (chatType === "group-chat") {
+            ;
             if (groupDetails) {
-                socket.emit("addMember", { roomId: groupDetails?.roomId, newMembers: memberUsernames });
+                socket.emit("addMember", { roomId: groupDetails?.roomId, newMembers: memberIds });
             } else {
-                socket.emit("createGroup", { groupName, members: memberUsernames });
+                socket.emit("createGroup", { groupName, members: memberIds });
             }
         } else {
-            socket.emit("joinRoom", { receiver: memberUsernames[0] });
+            socket.emit("joinRoom", { receiverId: memberIds[0] });
         }
 
         setIsGroupModalOpen(false);
@@ -155,10 +156,10 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                                 : options.length === 0
                                     ? <p className="p-4 text-center text-xs text-slate-400">No users found</p>
                                     : options.map(user => (
-                                        <label key={user.username} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer group">
+                                        <label key={user._id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer group">
                                             <input
                                                 type={chatType === "group-chat" ? "checkbox" : "radio"}
-                                                checked={selectedMembers.some(m => m.username === user.username)}
+                                                checked={selectedMembers.some(m => m._id === user._id)}
                                                 onChange={() => handleSelectedMembersChange(user)}
                                                 className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                                             />
@@ -175,7 +176,7 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                     {selectedMembers.length > 0 && (
                         <div className="flex flex-wrap gap-2 pt-1">
                             {selectedMembers.map(user => (
-                                <span key={user.username} className="inline-flex items-center bg-indigo-50 text-indigo-700 text-[11px] font-bold px-2 py-1 rounded-md border border-indigo-100">
+                                <span key={user._id} className="inline-flex items-center bg-indigo-50 text-indigo-700 text-[11px] font-bold px-2 py-1 rounded-md border border-indigo-100">
                                     {user.name}
                                     <button
                                         type="button"

@@ -5,7 +5,7 @@ const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
     const localStorageUsername = localStorage.getItem("username");
-    
+
     const [username, setUsername] = useState(localStorageUsername || "");
     const [roomId, setRoomId] = useState();
     const [activeChat, setActiveChat] = useState(null);
@@ -24,7 +24,6 @@ export const SocketContextProvider = ({ children }) => {
 
         const onRoomJoined = (roomData) => {
 
-
             if (typeof roomData === "string") {
                 setRoomId(roomData);
                 return;
@@ -36,8 +35,11 @@ export const SocketContextProvider = ({ children }) => {
 
 
         if (!socket.connected) {
+            // eslint-disable-next-line react-hooks/immutability
+            socket.auth = {
+                token: localStorage.getItem("token")
+            };
             socket.connect();
-            socket.emit("join", username);
         }
 
         socket.on("roomJoined", onRoomJoined);

@@ -81,12 +81,42 @@ const ConversationList = () => {
 
     const handleListClick = (user) => {
         if (!socket) return console.error("Socket not connected");
-        if (user.isGroup) {
-            socket.emit("joinRoom", { roomId: user.roomId });
-        } else {
-            socket.emit("joinRoom", { receiver: user.username });
-        }
+        socket.emit("joinRoom", { roomId: user.roomId });
     };
+
+    useEffect(() => {
+        const handleStatusChange = (statusData) => {
+
+            setConversationList(prev => prev.map(conversation => {
+                if (conversation._id === statusData.roomId) {
+                    return {
+                        ...conversation,
+                        online: statusData.online
+                    };
+                } else {
+                    return conversation;
+                }
+            }))
+        }
+
+        const handleNewGroupCreated = (groupData) => {
+            setConversationList(prev => [groupData, ...prev]);
+        }
+
+        const handleNewChat = (chatData) => {
+            setConversationList(prev => [chatData, ...prev]);
+        };
+
+        socket.on("userStatusChanged", handleStatusChange);
+        socket.on("newGroupCreated", handleNewGroupCreated);
+        socket.on("newChatStarted", handleNewChat);
+
+        return () => {
+            socket.off("userStatusChanged", handleStatusChange);
+            socket.off("newGroupCreated", handleNewGroupCreated);
+            socket.off("newChatStarted", handleNewChat);
+        }
+    }, [conversationList, socket]);
 
     return (
         <>

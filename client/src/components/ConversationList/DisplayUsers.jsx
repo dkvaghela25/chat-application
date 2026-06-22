@@ -2,7 +2,6 @@ import { IoPersonRemoveSharp } from "react-icons/io5";
 import { useSocketContext } from "../../contexts/socketContext";
 
 const DisplayUsers = ({ userList, handleJoin, handleRemove, loading }) => {
-    console.log("🚀 ~ DisplayUsers ~ loading:", loading)
     const { username } = useSocketContext();
 
     if (loading) return (
