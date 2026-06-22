@@ -1,8 +1,25 @@
 import { IoPersonRemoveSharp } from "react-icons/io5";
 import { useSocketContext } from "../../contexts/socketContext";
 
-const DisplayUsers = ({ userList, handleJoin, handleRemove }) => {
+const DisplayUsers = ({ userList, handleJoin, handleRemove, loading }) => {
+    console.log("🚀 ~ DisplayUsers ~ loading:", loading)
     const { username } = useSocketContext();
+
+    if (loading) return (
+        Array.from({ length: 5 }).map((_, index) => (
+            <div key={index} className="group flex items-center gap-4 px-4 py-3 mx-2 rounded-xl transition-all duration-200 animate-pulse">
+                <div className="relative shrink-0">
+                    <div className="rounded-full w-12 h-12 bg-slate-200" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                        <div className="h-4 w-32 bg-slate-200 rounded-md" />
+                    </div>
+                    <div className="h-3 w-24 bg-slate-200 rounded-md mt-1" />
+                </div>
+            </div>
+        ))
+    )
 
     return (
         <div className="flex-1 overflow-y-auto py-2 custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400">
@@ -14,10 +31,10 @@ const DisplayUsers = ({ userList, handleJoin, handleRemove }) => {
                         ${handleJoin ? 'cursor-pointer hover:bg-slate-50' : 'cursor-default'}`}
                 >
                     <div className="relative shrink-0">
-                        <img 
-                            className="rounded-full w-12 h-12 shadow-sm border border-slate-100" 
-                            src={`https://ui-avatars.com/api/?name=${user.name}&background=random&color=fff&bold=true`} 
-                            alt={user.name} 
+                        <img
+                            className="rounded-full w-12 h-12 shadow-sm border border-slate-100"
+                            src={`https://ui-avatars.com/api/?name=${user.name}&background=random&color=fff&bold=true`}
+                            alt={user.name}
                         />
 
                         {Object.prototype.hasOwnProperty.call(user, "online") && (
@@ -30,7 +47,7 @@ const DisplayUsers = ({ userList, handleJoin, handleRemove }) => {
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                             <h3 className="text-[14px] font-bold text-slate-700 truncate group-hover:text-indigo-600 transition-colors">
-                                {user.name} 
+                                {user.name}
                                 {!user.isGroup && user.username === username && (
                                     <span className="ml-1 text-slate-400 font-normal">(You)</span>
                                 )}
@@ -39,16 +56,16 @@ const DisplayUsers = ({ userList, handleJoin, handleRemove }) => {
                         <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
                             {user.isGroup
                                 ? `${user.members?.length || 0} members`
-                                : Object.prototype.hasOwnProperty.call(user, "online") 
-                                    ? (user.online ? 'Active now' : 'Offline') 
+                                : Object.prototype.hasOwnProperty.call(user, "online")
+                                    ? (user.online ? 'Active now' : 'Offline')
                                     : `@${user.username}`}
                         </p>
                     </div>
 
                     {(handleRemove && user.username !== username) && (
                         <button
-                            onClick={(e) => { 
-                                e.stopPropagation(); 
+                            onClick={(e) => {
+                                e.stopPropagation();
                                 handleRemove(user.username);
                             }}
                             className="p-2.5 rounded-full text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200 active:scale-90"

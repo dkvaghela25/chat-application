@@ -5,24 +5,38 @@ import { useSocketContext } from "../../contexts/socketContext";
 import GroupModal from "./GroupModal";
 import SearchInput from "../ui/SearchInput";
 import { RiChatNewLine } from "react-icons/ri";
+import { fetchConversationList } from "../../api/user";
 
-const UsersList = () => {
+const ConversationList = () => {
 
     const { socket } = useSocketContext();
     const searchResultsRef = useRef(null);
     const [searchInput, setSearchInput] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [conversationList, setConversationList] = useState([]);
+    const [loadingConversations, setLoadingConversations] = useState(true);
 
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
+    const getConversationList = async () => {
+        try {
+            setLoadingConversations(true);
+            const data = await fetchConversationList();
+            if (data.success) {
+                setConversationList(data.conversationList);
+            } else {
+                console.error("Failed to fetch conversation list:", data.message);
+            }
+        } catch (error) {
+            console.error("Error fetching conversation list:", error);
+        } finally {
+            setLoadingConversations(false);
+        }
+    }
+
     useEffect(() => {
-        if (!socket) return;
-        const callback = (data) => {
-            setConversationList(data)
-        };
-        socket.on("conversationList", callback);
-        return () => socket.off("conversationList", callback)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        getConversationList();
     }, []);
 
     useEffect(() => {
@@ -117,7 +131,7 @@ const UsersList = () => {
                     <p className="px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                         Your Conversations
                     </p>
-                    <DisplayUsers handleJoin={handleListClick} userList={conversationList} />
+                    <DisplayUsers handleJoin={handleListClick} userList={conversationList} loading={loadingConversations} />
                 </div>
 
             </div>
@@ -128,4 +142,4 @@ const UsersList = () => {
     );
 };
 
-export default UsersList;
+export default ConversationList;

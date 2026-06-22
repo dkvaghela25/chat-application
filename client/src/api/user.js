@@ -1,9 +1,8 @@
 import axiosInstance from "../utils/axiosInstance";
 
-
 export const fetchAllUser = async () => {
     try {
-        
+
         const response = await axiosInstance.get(`/user/all`);
         console.log("API Response:", response.data);
 
@@ -12,7 +11,7 @@ export const fetchAllUser = async () => {
         }
 
         return response.data;
-        
+
     } catch (error) {
         console.error("Search Error:", error);
         throw new Error("Search failed");
@@ -21,7 +20,7 @@ export const fetchAllUser = async () => {
 
 export const searchUser = async (searchInput) => {
     try {
-        
+
         const response = await axiosInstance.get(`/user/search?searchInput=${searchInput}`);
         console.log("API Response:", response.data);
 
@@ -30,7 +29,7 @@ export const searchUser = async (searchInput) => {
         }
 
         return response.data;
-        
+
     } catch (error) {
         console.error("Search Error:", error);
         throw new Error("Search failed");
@@ -39,7 +38,7 @@ export const searchUser = async (searchInput) => {
 
 // export const connectedUsers = async (currentUser) => {
 //     try {
-        
+
 //         const response = await axiosInstance.get(`/user/connected_users?currentUser=${currentUser}`);
 //         console.log("API Response:", response.data);
 
@@ -48,16 +47,27 @@ export const searchUser = async (searchInput) => {
 //         }
 
 //         return response.data;
-        
+
 //     } catch (error) {
 //         console.error("Search Error:", error);
 //         throw new Error("Search failed");
 //     }
 // };
 
+export const fetchConversationList = async () => {
+    try {
+        const response = await axiosInstance.get(`/user/conversation_list`);
+        console.log("API Response:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Fetch Conversation List Error:", error);
+        throw new Error("Failed to fetch conversation list");
+    }
+};
+
 export const fetchUserDetails = async (username) => {
     try {
-        
+
         const response = await axiosInstance.get(`/user/user_details/${username}`);
         console.log("API Response:", response.data);
 
@@ -66,7 +76,7 @@ export const fetchUserDetails = async (username) => {
         }
 
         return response.data;
-        
+
     } catch (error) {
         console.error("Search Error:", error);
         throw new Error("Search failed");

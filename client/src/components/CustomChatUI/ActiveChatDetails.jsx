@@ -5,9 +5,9 @@ import { GoDeviceCameraVideo } from "react-icons/go";
 import { IoCallOutline, IoClose } from "react-icons/io5";
 import { fetchUserDetails } from "../../api/user";
 import { fetchGroupDetails } from "../../api/room";
-import DisplayUsers from "../UsersList/DisplayUsers";
+import DisplayUsers from "../ConversationList/DisplayUsers";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
-import GroupModal from "../UsersList/GroupModal";
+import GroupModal from "../ConversationList/GroupModal";
 
 const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
     const { socket, roomId, activeChat, username } = useSocketContext();

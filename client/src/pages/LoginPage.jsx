@@ -49,6 +49,7 @@ const LoginPage = () => {
             if (res.success) {
 
                 setUsername(res.username);
+                localStorage.setItem("token", res.token); 
 
                 if (!socket.connected) {
                     socket.connect();
@@ -67,7 +68,7 @@ const LoginPage = () => {
             }
         } catch (error) {
             setLoading(false)
-            console.error("Login Failed : ",error)
+            console.error("Login Failed : ", error)
         }
     };
 
