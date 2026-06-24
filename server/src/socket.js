@@ -320,30 +320,30 @@ export const initSocket = (server) => {
             }
         });
 
-        socket.on("getMessages", async ({ roomId }) => {
-            try {
+        // socket.on("getMessages", async ({ roomId }) => {
+        //     try {
 
-                if (!roomId) return;
+        //         if (!roomId) return;
 
-                const requester = socket.userId;
-                if (!requester) return;
+        //         const requester = socket.userId;
+        //         if (!requester) return;
 
-                const room = await Room.findOne({ roomId })
-                    .select("members")
-                    .lean();
-                if (!room || !roomHasMember(room, requester)) return;
+        //         const room = await Room.findOne({ roomId })
+        //             .select("members")
+        //             .lean();
+        //         if (!room || !roomHasMember(room, requester)) return;
 
-                const messages = await Message.find({ roomId })
-                    .sort({ createdAt: 1 })
-                    .populate("sender", "name username")
-                    .lean();
+        //         const messages = await Message.find({ roomId })
+        //             .sort({ createdAt: 1 })
+        //             .populate("sender", "name username")
+        //             .lean();
 
-                socket.emit("chatHistory", messages.map(serializeMessage));
+        //         socket.emit("chatHistory", messages.map(serializeMessage));
 
-            } catch (err) {
-                console.error("Get Messages Error:", err.message);
-            }
-        });
+        //     } catch (err) {
+        //         console.error("Get Messages Error:", err.message);
+        //     }
+        // });
 
         socket.on("disconnect", async () => {
             try {
