@@ -8,9 +8,10 @@ import { useRef } from "react";
 
 const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCodeEditorMode }) => {
 
-    const { socket, roomId, username } = useSocketContext();
+    const { socket, roomId, user } = useSocketContext();
     const typingTimeoutRef = useRef(null);
     const isTypingRef = useRef(false);
+    const username = user?.username;
 
 
     const [availableLanguage, setAvailableLanguage] = useState([]);

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const roomSchema = new mongoose.Schema(
     {
-        admin: {
+        adminId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             default: null,

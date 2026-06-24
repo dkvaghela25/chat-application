@@ -6,7 +6,9 @@ import SearchInput from "../ui/SearchInput";
 import { toast } from "react-toastify";
 
 const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => {
-    const { socket, username } = useSocketContext();
+    const { socket, user } = useSocketContext();
+    const username = user?.username;
+    const userId = user?._id;
 
     const [searchInput, setSearchInput] = useState("");
     const [options, setOptions] = useState([]);
@@ -43,10 +45,10 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
 
                     const existingMembers = chatType === "group-chat"
                         ? groupDetails?.members?.map(m => m._id) || []
-                        : conversationList.map(u => u._id) || [];
+                        : conversationList.map(u => u.userId) || [];
 
                     const filtered = res.users
-                        .filter((user) => (user.username !== username && !existingMembers.includes(user._id)))
+                        .filter((user) => (user._id !== userId && !existingMembers.includes(user._id)))
 
                     setOptions(filtered);
 

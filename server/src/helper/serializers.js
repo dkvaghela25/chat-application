@@ -24,13 +24,12 @@ export const serializeRoom = (room, currentUserId = null) => {
 
   return {
     ...room,
-    admin: typeof room.admin === "object" ? room.admin?.username ?? null : room.admin ?? null,
     members,
     ...(directMember
       ? {
-          username: directMember.username,
-          online: Boolean(directMember.online),
-        }
+        username: directMember.username,
+        online: Boolean(directMember.online),
+      }
       : {}),
   };
 };

@@ -4,6 +4,31 @@ import { RequestInputError } from "../../helper/errors.js";
 import { sendError } from "../../helper/sendError.js";
 import { serializeRoom } from "../../helper/serializers.js";
 
+export const me = async (req, res) => {
+    try {
+        const { userId } = req;
+        if (!userId) {
+            throw new RequestInputError("User ID is required", 400);
+        }
+        const user = await User.findById(userId, { name: 1, username: 1, email: 1 }).lean();
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "User fetched successfully",
+            userDetails: user,
+        });
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+};
+
 export const allUsers = async (req, res) => {
     try {
         const users = await User.find({}, { name: 1, username: 1 }).lean();
@@ -125,7 +150,6 @@ export const conversationList = async (req, res) => {
         const rooms = await Room.find({ members: userId })
             .sort({ updatedAt: -1 })
             .populate("members", "name username online")
-            .populate("admin", "username")
             .lean();
 
         const directUserIds = [...new Set(
@@ -160,7 +184,8 @@ export const conversationList = async (req, res) => {
                     _id: room._id,
                     roomId: room.roomId,
                     isGroup: false,
-                    name: otherUser?.name || otherUser?.username || otherUserId,
+                    name: otherUser?.name || otherUser?.username,
+                    userId: otherUserId,
                     username: otherUser?.username || otherUserId,
                     online: Boolean(otherUser?.online),
                 };

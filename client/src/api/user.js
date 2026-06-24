@@ -1,10 +1,20 @@
 import axiosInstance from "../utils/axiosInstance";
 
+
+export const fetchMe = async () => {
+    try {
+        const response = await axiosInstance.get(`/user/me`);
+        return response.data;
+    } catch (error) {
+        console.error("Fetch User Details Error:", error);
+        throw new Error("Failed to fetch user details");
+    }
+};
+
 export const fetchAllUser = async () => {
     try {
 
         const response = await axiosInstance.get(`/user/all`);
-        console.log("API Response:", response.data);
 
         if (!response.data.success) {
             throw new Error(response.data.message || "Search failed");
@@ -22,7 +32,6 @@ export const searchUser = async (searchInput) => {
     try {
 
         const response = await axiosInstance.get(`/user/search?searchInput=${searchInput}`);
-        console.log("API Response:", response.data);
 
         if (!response.data.success) {
             throw new Error(response.data.message || "Search failed");
@@ -40,7 +49,6 @@ export const searchUser = async (searchInput) => {
 //     try {
 
 //         const response = await axiosInstance.get(`/user/connected_users?currentUser=${currentUser}`);
-//         console.log("API Response:", response.data);
 
 //         if (!response.data.success) {
 //             throw new Error(response.data.message || "Search failed");
@@ -57,7 +65,6 @@ export const searchUser = async (searchInput) => {
 export const fetchConversationList = async () => {
     try {
         const response = await axiosInstance.get(`/user/conversation_list`);
-        console.log("API Response:", response.data);
         return response.data;
     } catch (error) {
         console.error("Fetch Conversation List Error:", error);
@@ -69,7 +76,6 @@ export const fetchUserDetails = async (username) => {
     try {
 
         const response = await axiosInstance.get(`/user/user_details/${username}`);
-        console.log("API Response:", response.data);
 
         if (!response.data.success) {
             throw new Error(response.data.message || "Search failed");

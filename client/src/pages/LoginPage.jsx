@@ -5,7 +5,7 @@ import { loginUser } from '../api/auth';
 import { useSocketContext } from '../contexts/socketContext';
 
 const LoginPage = () => {
-    const { socket, setUsername } = useSocketContext();
+    const { getUserDetails } = useSocketContext();
     const navigate = useNavigate();
     const initialData = { "email": "", "password": "" };
     const [loading, setLoading] = useState(false);
@@ -47,26 +47,8 @@ const LoginPage = () => {
             const res = await loginUser(formData);
 
             if (res.success) {
-
-                setUsername(res.username);
                 localStorage.setItem("token", res.token);
-
-                if (!socket.connected) {
-                    // eslint-disable-next-line react-hooks/immutability
-                    socket.auth = {
-                        token: res.token
-                    };
-                    socket.connect();
-                }
-
-                socket.on("connect", () => {
-                    socket.emit("join", res.username);
-                });
-
-                if (socket.connected) {
-                    socket.emit("join", res.username);
-                }
-
+                getUserDetails();
                 setLoading(false)
                 navigate("/");
             }

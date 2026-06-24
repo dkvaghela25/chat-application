@@ -4,7 +4,6 @@ export const fetchGroupDetails = async (roomId) => {
     try {
 
         const response = await axiosInstance.get(`/room/room_details/${roomId}`);
-        console.log("API Response:", response.data);
 
         if (!response.data.success) {
             throw new Error(response.data.message || "Failed to fetch group details");

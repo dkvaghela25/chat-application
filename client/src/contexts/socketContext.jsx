@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { io } from "socket.io-client";
+import { fetchMe } from "../api/user";
 
 const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
-    const localStorageUsername = localStorage.getItem("username");
-
-    const [username, setUsername] = useState(localStorageUsername || "");
+    const [user, setUser] = useState(null);
     const [roomId, setRoomId] = useState();
     const [activeChat, setActiveChat] = useState(null);
 
@@ -14,13 +13,29 @@ export const SocketContextProvider = ({ children }) => {
         autoConnect: false,
     }), []);
 
+    const getUserDetails = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                setUser(null);
+                return;
+            }
+            const res = await fetchMe();
+            setUser(res.userDetails);
+        } catch (error) {
+            console.error("Error fetching user details:", error);
+            setUser(null);
+        }
+    };
+
     useEffect(() => {
-        localStorage.setItem("username", username);
-    }, [username]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        getUserDetails();
+    }, []);
 
     useEffect(() => {
 
-        if (!username) return;
+        if (!user) return;
 
         const onRoomJoined = (roomData) => {
 
@@ -33,6 +48,15 @@ export const SocketContextProvider = ({ children }) => {
             setActiveChat(roomData || null);
         };
 
+        const onStatusChange = (statusData) => {
+            setActiveChat(prev => {
+                if (!prev) return prev;
+                if (prev.roomId !== statusData.roomId) return prev;
+                const updatedActiveChat = { ...prev, online: statusData.online };
+                return updatedActiveChat;
+            });
+        };
+
 
         if (!socket.connected) {
             // eslint-disable-next-line react-hooks/immutability
@@ -43,15 +67,17 @@ export const SocketContextProvider = ({ children }) => {
         }
 
         socket.on("roomJoined", onRoomJoined);
+        socket.on("userStatusChanged", onStatusChange);
 
         return () => {
             socket.off("roomJoined", onRoomJoined);
+            socket.off("userStatusChanged", onStatusChange);
         };
-    }, [socket, username]);
+    }, [socket, user]);
 
     const value = {
-        username,
-        setUsername,
+        user,
+        getUserDetails,
         socket,
         roomId,
         setRoomId,

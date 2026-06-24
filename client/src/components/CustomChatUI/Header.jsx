@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import SearchInput from "../ui/SearchInput";
 import { searchMessage } from "../../api/message";
 import { IoMdClose, IoMdArrowBack } from "react-icons/io";
+import UIAvatar from "../ui/UIAvatar";
 
 const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDisplayChat, displayChat }) => {
-    const { activeChat, setRoomId, username } = useSocketContext();
+    const { activeChat, setRoomId, user } = useSocketContext();
     const [displayId, setDisplayId] = useState(false);
     const [searchInput, setSearchInput] = useState("");
     const [searchResults, setSearchResults] = useState([]);
+
+    const username = user?.username;
 
     const handleToggle = (id) => {
         setDisplayId(prev => prev === id ? false : id)
@@ -40,7 +43,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
     }, [searchInput]);
 
     const highlightMessage = (messageId) => {
-        
+
         setHighlightedMessageId(messageId);
         setDisplayId(false);
         setSearchInput("");
@@ -66,11 +69,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
                     >
                         <IoMdArrowBack size={24} />
                     </button>
-                    <img
-                        className="rounded-full w-10 h-10 md:w-12 md:h-12 shadow-sm border border-slate-100"
-                        src={`https://ui-avatars.com/api/?name=${activeChat?.name}&background=random&color=fff&bold=true`}
-                        alt={activeChat?.name}
-                    />
+                    <UIAvatar name={activeChat.name} userId={activeChat._id} />
 
                     <div className="flex-1 min-w-0">
                         <h2 className="text-slate-800 font-bold tracking-tight">{activeChat.name}</h2>
@@ -176,7 +175,7 @@ const Header = ({ setActiveChatDetailsIsOpen, setHighlightedMessageId, setDispla
 
                                         <button
                                             onClick={() => { setActiveChatDetailsIsOpen(true); handleToggle("menu-modal"); }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                            className="cursor-pointer w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                                         >
                                             <span> {activeChat.isGroup ? "Group Details" : "User Details"}</span>
                                         </button>

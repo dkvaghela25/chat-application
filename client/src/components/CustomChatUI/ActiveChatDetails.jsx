@@ -8,12 +8,16 @@ import { fetchGroupDetails } from "../../api/room";
 import DisplayUsers from "../ConversationList/DisplayUsers";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import GroupModal from "../ConversationList/GroupModal";
+import UIAvatar from "../ui/UIAvatar";
 
 const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
-    const { socket, roomId, activeChat, username } = useSocketContext();
+
+    const { socket, roomId, activeChat, user } = useSocketContext();
     const [activeChatDetails, setActiveChatDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+
+    const userId = user?._id;
 
     const getActiveChatDetails = async () => {
         setLoading(true);
@@ -34,11 +38,34 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
     }
 
     useEffect(() => {
-        socket.on("newMemberAdded", getActiveChatDetails)
-        socket.on("memberRemoved", getActiveChatDetails)
+
+        const handleMemberRemoved = (data) => {
+            setActiveChatDetails((prev) => {
+                if (prev.roomId !== data.roomId) return prev;
+                const updatedMembers = prev.members.filter((member) => member._id !== data.memberId);
+                return {
+                    ...prev,
+                    members: updatedMembers,
+                };
+            })
+        }
+
+        const handleNewMembersAdded = (data) => {
+            setActiveChatDetails((prev) => {
+                if (prev.roomId !== data.roomId) return prev;
+                const updatedMembers = [...prev.members, ...data.newMembers];
+                return {
+                    ...prev,
+                    members: updatedMembers,
+                };
+            })
+        }
+
+        socket.on("newMemberAdded", handleNewMembersAdded)
+        socket.on("memberRemoved", handleMemberRemoved)
         return () => {
-            socket.off("newMemberAdded", getActiveChatDetails)
-            socket.off("memberRemoved", getActiveChatDetails)
+            socket.off("newMemberAdded", handleNewMembersAdded)
+            socket.off("memberRemoved", handleMemberRemoved)
         }
     })
 
@@ -57,8 +84,8 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
         });
     }
 
-    const handleRemove = (member) => {
-        socket.emit("removeMember", { roomId, member })
+    const handleRemove = (memberId) => {
+        socket.emit("removeMember", { roomId, memberId })
     }
 
     return (
@@ -67,7 +94,7 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                 <div>
                     <button
                         onClick={() => setActiveChatDetailsIsOpen(false)}
-                        className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+                        className="cursor-pointer absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
                     >
                         <IoClose size={24} />
                     </button>
@@ -75,13 +102,9 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                     <div className="">
                         <div className="flex flex-col md:flex-row items-center gap-5">
                             <div className="relative">
-                                <img
-                                    className="rounded-full w-24 h-24 shadow-sm border border-slate-100"
-                                    src={`https://ui-avatars.com/api/?name=${activeChatDetails?.name}&background=random&color=fff&bold=true`}
-                                    alt={activeChatDetails?.name}
-                                />
+                                <UIAvatar name={activeChatDetails?.name} userId={activeChatDetails?._id} size="xl" />
                                 {!activeChatDetails?.isGroup && (
-                                    <span className={`absolute bottom-0.5 right-0.5 h-6 w-6 rounded-full border-4 border-white 
+                                    <span className={`absolute bottom-0 -right-1 h-6 w-6 rounded-full border-4 border-white 
                                     ${activeChatDetails?.online ? 'bg-emerald-500' : 'bg-slate-300'}`}
                                     />
                                 )}
@@ -104,9 +127,9 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                 <div className="flex flex-col flex-1 gap-3">
                     <div className={`w-full flex justify-between items-baseline ${!activeChatDetails?.isGroup ? "mt-10" : ""}`}>
                         <h3 className={`text-sm font-bold uppercase tracking-wider text-slate-400 `}>{activeChatDetails?.isGroup ? "Group Members" : "User Details"}</h3>
-                        {activeChatDetails?.admin === username && <button
+                        {activeChatDetails?.adminId === userId && <button
                             onClick={() => setIsGroupModalOpen(true)}
-                            className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-indigo-200 flex items-center justify-center"
+                            className="cursor-pointer p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-indigo-200 flex items-center justify-center"
                             title="Add New Member"
                         >
                             <AiOutlineUsergroupAdd className="h-5 w-5 group-hover:scale-110 transition-transform" />
@@ -122,7 +145,7 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                             {activeChatDetails.isGroup
                                 ? <>
                                     <div className="flex-1 max-h-90 -ml-5 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-400">
-                                        <DisplayUsers userList={activeChatDetails.members} handleRemove={activeChatDetails.admin === username ? handleRemove : null} />
+                                        <DisplayUsers items={activeChatDetails.members} handleRemove={activeChatDetails.adminId === userId ? handleRemove : null} />
                                     </div>
                                     <DetailItem icon={<BiTime />} label="Created On" value={formatDate(activeChatDetails?.createdAt)} />
                                 </>

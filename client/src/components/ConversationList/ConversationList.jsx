@@ -1,22 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import DisplayUsers from "./DisplayUsers";
-import { IoMdSearch } from "react-icons/io";
 import { useSocketContext } from "../../contexts/socketContext";
 import GroupModal from "./GroupModal";
 import SearchInput from "../ui/SearchInput";
 import { RiChatNewLine } from "react-icons/ri";
+import { FiLogOut } from "react-icons/fi"; // Added logout icon
 import { fetchConversationList } from "../../api/user";
+import { useNavigate } from "react-router-dom";
+import UIAvatar from "../ui/UIAvatar";
 
 const ConversationList = () => {
-
-    const { socket } = useSocketContext();
+    const { socket, user } = useSocketContext();
     const searchResultsRef = useRef(null);
     const [searchInput, setSearchInput] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [conversationList, setConversationList] = useState([]);
     const [loadingConversations, setLoadingConversations] = useState(true);
-
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+    const navigate = useNavigate();
 
     const getConversationList = async () => {
         try {
@@ -32,16 +33,21 @@ const ConversationList = () => {
         } finally {
             setLoadingConversations(false);
         }
-    }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        navigate("/login");
+    };
 
     useEffect(() => {
+        if (!user) return;
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getConversationList();
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         const handler = setTimeout(async () => {
-
             if (!searchInput.trim()) {
                 setSearchResults([]);
                 return;
@@ -72,7 +78,7 @@ const ConversationList = () => {
     }, []);
 
     const handleSearchClick = async (user) => {
-        console.log("user", user)
+        console.log("user", user);
         if (!socket) return console.error("Socket not connected");
         await socket.emit("joinRoom", { roomId: user.roomId });
         setSearchResults([]);
@@ -86,9 +92,8 @@ const ConversationList = () => {
 
     useEffect(() => {
         const handleStatusChange = (statusData) => {
-
             setConversationList(prev => prev.map(conversation => {
-                if (conversation._id === statusData.roomId) {
+                if (conversation.roomId === statusData.roomId) {
                     return {
                         ...conversation,
                         online: statusData.online
@@ -96,26 +101,38 @@ const ConversationList = () => {
                 } else {
                     return conversation;
                 }
-            }))
-        }
+            }));
+        };
 
         const handleNewGroupCreated = (groupData) => {
             setConversationList(prev => [groupData, ...prev]);
-        }
+        };
 
         const handleNewChat = (chatData) => {
             setConversationList(prev => [chatData, ...prev]);
         };
 
+        const handleReceiveMessage = (messageData) => {
+            setConversationList(prev => {
+                if (prev[0]?.roomId === messageData.roomId) return prev;
+                const conversation = prev.find(item => item.roomId === messageData.roomId);
+                if (!conversation) return prev;
+                return [conversation, ...prev.filter(item => item.roomId !== messageData.roomId)];
+            });
+        };
+
         socket.on("userStatusChanged", handleStatusChange);
         socket.on("newGroupCreated", handleNewGroupCreated);
         socket.on("newChatStarted", handleNewChat);
+        socket.on("receiveMessage", handleReceiveMessage);
 
         return () => {
             socket.off("userStatusChanged", handleStatusChange);
             socket.off("newGroupCreated", handleNewGroupCreated);
             socket.off("newChatStarted", handleNewChat);
-        }
+            socket.off("receiveMessage", handleReceiveMessage);
+        };
+
     }, [conversationList, socket]);
 
     return (
@@ -147,7 +164,7 @@ const ConversationList = () => {
                                         Search Results
                                     </p>
                                     {searchResults.length > 0 ? (
-                                        <div className="max-h-90 overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400"><DisplayUsers userList={searchResults} handleJoin={handleSearchClick} /></div>
+                                        <div className="max-h-90 overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400"><DisplayUsers items={searchResults} handleJoin={handleSearchClick} /></div>
                                     ) : (
                                         <p className="px-6 py-4 text-sm text-slate-500 italic">No members found.</p>
                                     )}
@@ -161,13 +178,32 @@ const ConversationList = () => {
                     <p className="px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                         Your Conversations
                     </p>
-                    <DisplayUsers handleJoin={handleListClick} userList={conversationList} loading={loadingConversations} />
+                    <DisplayUsers handleJoin={handleListClick} items={conversationList} loading={loadingConversations} />
                 </div>
 
+                <footer className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <UIAvatar name={user?.name} userId={user?._id} />
+                        <div className="flex flex-col">
+                            <span className="text-sm font-medium text-slate-700 truncate max-w-30">
+                                {user?.name}
+                            </span>
+                            <span className="text-[12px] font-medium text-slate-500 truncate max-w-30">
+                                @{user?.username}
+                            </span>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleLogout}
+                        className="cursor-pointer p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 flex items-center justify-center"
+                        title="Logout"
+                    >
+                        <FiLogOut className="h-5 w-5" />
+                    </button>
+                </footer>
             </div>
 
             {isGroupModalOpen && <GroupModal conversationList={conversationList} setIsGroupModalOpen={setIsGroupModalOpen} />}
-
         </>
     );
 };

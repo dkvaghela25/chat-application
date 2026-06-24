@@ -9,7 +9,8 @@ import Attachment from "./Attachment";
 const Chat = ({ messages, highlightedMessageId, isTyping }) => {
 
     const messagesEndRef = useRef(null);
-    const { activeChat, username, roomId } = useSocketContext();
+    const { activeChat, user, roomId } = useSocketContext();
+    const username = user?.username;
 
     const getSenderUsername = (sender) => typeof sender === "object" ? sender?.username : sender;
 

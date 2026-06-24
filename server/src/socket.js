@@ -21,12 +21,12 @@ export const initSocket = (server) => {
 
     const loadRoom = (roomId) => Room.findOne({ roomId })
         .populate("members", "name username online")
-        .populate("admin", "username")
+        .populate("adminId", "username")
         .lean();
 
     const getImpactedUsersRoomId = async (userId) => {
         const rooms = await Room.find({ members: userId, isGroup: false })
-            .select("members")
+            .select("members roomId")
             .lean();
 
         return rooms;
@@ -40,18 +40,16 @@ export const initSocket = (server) => {
         const impactedUsersRooms = await getImpactedUsersRoomId(userId);
 
         impactedUsersRooms
-            .forEach(({ _id: roomId, members }) => {
+            .forEach(({ roomId, members }) => {
                 members
                     .filter((memberId) => String(memberId) !== String(userId))
                     .forEach((memberId) => {
-                        console.count("Emitting userStatusChanged to");
                         io.to(`user:${memberId}`).emit("userStatusChanged", { roomId, online });
                     });
             });
     };
 
     const emitNewGroupCreatedToUsers = async (userIds = [], room) => {
-
         userIds
             .forEach((userId) => {
                 io.to(`user:${userId}`).emit("newGroupCreated", {
@@ -62,6 +60,15 @@ export const initSocket = (server) => {
                 });
             });
     }
+
+    const resolveUsersByUserIds = async (userIds = []) => {
+        const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
+        if (uniqueUserIds.length === 0) return [];
+
+        return User.find({ _id: { $in: uniqueUserIds } })
+            .select(getUserProjection)
+            .lean();
+    };
 
     io.use((socket, next) => {
         try {
@@ -83,19 +90,16 @@ export const initSocket = (server) => {
     io.on("connection", async (socket) => {
         console.log("✅ User connected:", socket.id);
 
-        const currentUser =
-            await User.findByIdAndUpdate(
-                socket.userId,
-                { socketId: socket.id, online: true, },
-                { new: true }
-            );
+        const currentUser = await User.findByIdAndUpdate(
+            socket.userId,
+            { socketId: socket.id, online: true, },
+            { new: true }
+        );
 
         if (!currentUser) {
             socket.disconnect();
             return;
         }
-
-        socket.username = currentUser.username;
 
         socket.join(`user:${currentUser._id}`);
 
@@ -103,9 +107,9 @@ export const initSocket = (server) => {
 
         socket.on("joinRoom", async ({ receiverId, roomId }) => {
             try {
+
                 const senderId = socket.userId;
-                const senderUsername = socket.username;
-                if (!senderId || !senderUsername) return;
+                if (!senderId) return;
 
                 let room = null;
 
@@ -117,22 +121,27 @@ export const initSocket = (server) => {
 
                     if (!receiverUser) return;
 
-                    const directRoomId = [senderUsername, receiverUser.username].sort().join("_");
-                    room = await loadRoom(directRoomId);
+                    room = await Room.findOne({ isGroup: false, members: { $all: [senderId, receiverUser._id] } });
+
                     if (!room) {
+                        const directRoomId = `direct_${randomUUID()}`;
                         room = await Room.create({
                             roomId: directRoomId,
                             members: [senderId, receiverUser._id],
                             isGroup: false,
                         });
                         room = await loadRoom(directRoomId);
-                        socket.emit("newChatStarted", room.members.find((member) => String(member._id) !== String(senderId)));
+                        const senderNewChatMessage = { ...room.members.find((member) => String(member._id) !== String(senderId)), roomId: room.roomId, isGroup: false, userId: receiverId };
+                        const receiverNewChatMessage = { ...room.members.find((member) => String(member._id) !== String(receiverId)), roomId: room.roomId, isGroup: false, userId: senderId };
+                        socket.emit("newChatStarted", senderNewChatMessage);
+                        io.to(`user:${receiverUser._id}`).emit("newChatStarted", receiverNewChatMessage);
                     }
                 } else if (roomId) {
                     room = await loadRoom(roomId);
                 }
 
                 if (!room || !roomHasMember(room, senderId)) return;
+
 
                 socket.join(room.roomId);
 
@@ -145,26 +154,25 @@ export const initSocket = (server) => {
                     });
                 } else {
                     const otherUser = room.members.find((member) => String(member._id) !== String(senderId)) || null;
-
                     socket.emit("roomJoined", {
                         roomId: room.roomId,
                         isGroup: false,
                         name: otherUser?.name || senderUsername,
                         username: otherUser?.username || senderUsername,
+                        userId: otherUser?._id,
                         online: Boolean(otherUser?.online),
                     });
                 }
 
             } catch (err) {
-                console.error("Join Room Error:", err.message);
+                console.error("Join Room Error:", err);
             }
         });
 
         socket.on("createGroup", async ({ groupName, members = [] }) => {
             try {
                 const adminId = socket.userId;
-                const adminUsername = socket.username;
-                if (!adminId || !adminUsername) return;
+                if (!adminId) return;
 
                 const memberIds = [adminId, ...members];
                 if (!groupName?.trim() || memberIds.length < 2) return;
@@ -173,7 +181,7 @@ export const initSocket = (server) => {
                     roomId: `group_${randomUUID()}`,
                     isGroup: true,
                     name: groupName.trim(),
-                    admin: adminId,
+                    adminId: adminId,
                     members: memberIds,
                 });
 
@@ -182,17 +190,16 @@ export const initSocket = (server) => {
                 socket.join(populatedRoom.roomId);
 
                 socket.emit("roomJoined", {
-                    admin: adminUsername,
+                    adminId: adminId,
                     roomId: populatedRoom.roomId,
                     isGroup: true,
                     name: populatedRoom.name,
                     members: populatedRoom.members,
                 });
-
                 await emitNewGroupCreatedToUsers(memberIds, populatedRoom);
 
             } catch (err) {
-                console.error("Create Group Error:", err.message);
+                console.error("Create Group Error:", err);
             }
         });
 
@@ -201,65 +208,67 @@ export const initSocket = (server) => {
 
                 const room = await Room.findOne({ roomId })
                     .populate("members", "name username online")
-                    .populate("admin", "username")
                     .lean();
                 if (!room) return;
 
-                const adminUsername = socket.username;
-                if (room.admin !== adminUsername || newMembers.length === 0) return;
+                const adminUserId = socket.userId;
 
-                const memberDocs = await resolveUsersByUsernames(newMembers);
-                const memberIds = memberDocs.map((member) => String(member._id));
-                if (memberIds.length === 0) return;
+                if (String(room.adminId) !== adminUserId || newMembers.length === 0) return;
+
+                const memberDocs = await resolveUsersByUserIds(newMembers);
+                const existingMemberIds = room.members.map((member) => String(member._id));
+                const filteredNewMembers = memberDocs.filter((member) => !existingMemberIds.includes(String(member._id)));
+                const filteredNewMemberIds = filteredNewMembers.map((member) => String(member._id));
+
+                if (filteredNewMemberIds.length === 0) return;
 
                 await Room.updateOne(
                     { roomId },
-                    { $addToSet: { members: { $each: memberIds } } }
+                    { $addToSet: { members: { $each: filteredNewMemberIds } } }
                 );
 
-                socket.emit("newMemberAdded");
+                socket.emit("newMemberAdded", { roomId, newMembers: filteredNewMembers });
 
                 socket.emit("roomJoined", {
                     roomId,
                     isGroup: true,
                     name: room.name,
-                    members: [...room.members, ...memberDocs],
+                    members: [...room.members, ...filteredNewMembers],
                 });
 
             } catch (err) {
-                console.error("Create Group Error:", err.message);
+                console.error("Create Group Error:", err);
             }
         });
 
-        socket.on("removeMember", async ({ roomId, member }) => {
+        socket.on("removeMember", async ({ roomId, memberId }) => {
             try {
+
+                if (!roomId) throw new Error("Room ID is required");
+                if (!memberId?.trim()) throw new Error("Member's userId is required");
 
                 const room = await Room.findOne({ roomId })
                     .populate("members", "name username online")
-                    .populate("admin", "username")
                     .lean();
+
                 if (!room) return;
 
-                const adminUsername = socket.username;
-                if (room.admin !== adminUsername || !member.trim()) return;
+                const adminUserId = socket.userId;
 
-                const memberUser = await User.findOne({ username: member })
+                if (String(room.adminId) !== adminUserId) return;
+
+
+                const memberUser = await User.findOne({ _id: memberId })
                     .select("_id username")
                     .lean();
-                if (!memberUser?._id) return;
+                if (!memberUser) return;
 
                 await Room.updateOne(
                     { roomId },
-                    { $pull: { members: memberUser._id } }
+                    { $pull: { members: memberId } }
                 );
 
-                socket.emit("memberRemoved");
-
-                await emitConversationListToUsers(
-                    room.members
-                        .map((roomMember) => roomMember._id)
-                        .filter((roomMemberId) => String(roomMemberId) !== String(memberUser._id))
-                );
+                socket.emit("memberRemoved", { roomId, memberId });
 
             } catch (err) {
                 console.error("Create Group Error:", err.message);
@@ -306,10 +315,8 @@ export const initSocket = (server) => {
 
                 io.to(roomId).emit("receiveMessage", serializeMessage(populatedMessage));
 
-                await emitConversationListToUsers(room.members);
-
             } catch (err) {
-                console.error("Send Message Error:", err.message);
+                console.error("Send Message Error:", err);
             }
         });
 

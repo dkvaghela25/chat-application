@@ -13,7 +13,6 @@ export const roomDetails = async (req, res) => {
 
     const room = await Room.findOne({ roomId })
       .populate("members", "name username online")
-      .populate("admin", "username")
       .lean();
 
     if (!room) {
