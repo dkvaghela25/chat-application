@@ -45,6 +45,19 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                         const isMe = senderUsername === username;
                         const isHighlighted = highlightedMessageId === msg._id;
 
+                        if (msg.type === "notification") {
+                            return (
+                                <div
+                                    key={msg._id || `${msg.sender}-${msg.createdAt}-${index}`}
+                                    className="flex justify-center"
+                                >
+                                    <div className="px-4 py-2.5 rounded-2xl max-w-[82%] shadow-sm bg-slate-100 text-slate-400 text-xs italic">
+                                        {msg.text}
+                                    </div>
+                                </div>
+                            );
+                        }
+
                         return (
                             <div
                                 id={msg._id}

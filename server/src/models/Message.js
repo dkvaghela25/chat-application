@@ -9,6 +9,12 @@ const messageSchema = new mongoose.Schema(
       required: true,
     },
 
+    type: {
+      type: String,
+      enum: ["text", "notification"],
+      default: "text",
+    },
+
     roomId: {
       type: String,
       required: true,
@@ -45,7 +51,7 @@ const messageSchema = new mongoose.Schema(
         type: String,
       },
     },
-    
+
   },
   { timestamps: true }
 );

@@ -14,9 +14,6 @@ function socketManager(io) {
     io.on('connection', async (socket) => {
         await markUserAsOnline(socket);
         socket.on("joinRoom", payload => joinRoom(socket, payload));
-        socket.on("createGroup", payload => createGroup(socket, payload));
-        socket.on("addMember", payload => addMember(socket, payload));
-        socket.on("removeMember", payload => removeMember(socket, payload));
         socket.on("isTyping", payload => isTyping(payload));
         socket.on("sendMessage", payload => sendMessage(socket, payload));
         socket.on("disconnect", () => markUserAsOffline(socket));

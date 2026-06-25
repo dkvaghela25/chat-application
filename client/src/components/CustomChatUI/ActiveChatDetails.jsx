@@ -4,7 +4,7 @@ import { BiMessageDetail, BiUser, BiEnvelope, BiTime, BiHash } from "react-icons
 import { GoDeviceCameraVideo } from "react-icons/go";
 import { IoCallOutline, IoClose } from "react-icons/io5";
 import { fetchUserDetails } from "../../api/user";
-import { fetchGroupDetails } from "../../api/room";
+import { fetchGroupDetails, removeMemberFromGroup } from "../../api/room";
 import DisplayUsers from "../ConversationList/DisplayUsers";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import GroupModal from "../ConversationList/GroupModal";
@@ -61,10 +61,10 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
             })
         }
 
-        socket.on("newMemberAdded", handleNewMembersAdded)
+        socket.on("newMembersAdded", handleNewMembersAdded)
         socket.on("memberRemoved", handleMemberRemoved)
         return () => {
-            socket.off("newMemberAdded", handleNewMembersAdded)
+            socket.off("newMembersAdded", handleNewMembersAdded)
             socket.off("memberRemoved", handleMemberRemoved)
         }
     })
@@ -84,8 +84,12 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
         });
     }
 
-    const handleRemove = (memberId) => {
-        socket.emit("removeMember", { roomId, memberId })
+    const handleRemove = async (memberId) => {
+        try {
+            await removeMemberFromGroup(roomId, memberId);
+        } catch (error) {
+            console.error("Error removing member:", error);
+        }
     }
 
     return (

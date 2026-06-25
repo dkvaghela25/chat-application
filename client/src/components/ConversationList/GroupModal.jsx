@@ -4,6 +4,7 @@ import { useSocketContext } from "../../contexts/socketContext";
 import { IoMdSearch } from "react-icons/io";
 import SearchInput from "../ui/SearchInput";
 import { toast } from "react-toastify";
+import { addMembersToExistingGroup, createNewGroup } from "../../api/room";
 
 const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => {
     const { socket, user } = useSocketContext();
@@ -95,22 +96,46 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
         return Object.keys(tempErrors).length === 0;
     };
 
+    const createGroup = async () => {
+        try {
+            const membersIds = selectedMembers.map(m => m._id);
+            const res = await createNewGroup(groupName, membersIds);
+            if (res.success) {
+                setIsGroupModalOpen(false);
+            } else {
+                toast.error(res.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    }
+
+    const addMembersToGroup = async () => {
+        try {
+            const roomId = groupDetails.roomId;
+            const newMembersIds = selectedMembers.map(m => m._id);
+            const res = await addMembersToExistingGroup(roomId, newMembersIds);
+            if (res.success) {
+                setIsGroupModalOpen(false);
+            } else {
+                toast.error(res.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!validateForm()) return;
 
         const memberIds = selectedMembers.map(m => m._id);
 
-        if (chatType === "group-chat") {
-            ;
-            if (groupDetails) {
-                socket.emit("addMember", { roomId: groupDetails?.roomId, newMembers: memberIds });
-            } else {
-                socket.emit("createGroup", { groupName, members: memberIds });
-            }
-        } else {
-            socket.emit("joinRoom", { receiverId: memberIds[0] });
-        }
+        chatType !== "group-chat"
+            ? socket.emit("joinRoom", { receiverId: memberIds[0] })
+            : groupDetails
+                ? addMembersToGroup()
+                : createGroup();
 
         setIsGroupModalOpen(false);
     };
