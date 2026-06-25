@@ -4,6 +4,7 @@ import CodeEditor from "./Footer/CodeEditor";
 import { useSocketContext } from "../../contexts/socketContext";
 import Chat from "./Chat";
 import Attachments from "./Attachments";
+import { fetchMessages } from "../../api/message";
 
 const Messages = ({ highlightedMessageId, displayChat }) => {
 
@@ -12,10 +13,20 @@ const Messages = ({ highlightedMessageId, displayChat }) => {
 
     const { socket, roomId } = useSocketContext();
 
+    const getMessages = async () => {
+        try {
+            if (!roomId) return;
+            const res = await fetchMessages(roomId);
+            setMessages(res.messages);
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+        }
+    }
+
     useEffect(() => {
-        if (!socket || !roomId) return;
-        socket.emit("getMessages", { roomId });
-    }, [socket, roomId]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        getMessages();
+    }, [roomId]);
 
     useEffect(() => {
 

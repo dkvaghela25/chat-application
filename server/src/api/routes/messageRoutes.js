@@ -1,5 +1,5 @@
 import express from "express";
-import { search, uploadFile } from "../controller/messageController.js";
+import { getMessages, search, uploadFile } from "../controller/messageController.js";
 import multer from "multer";
 
 // memory storage (buffer)
@@ -10,5 +10,6 @@ const router = express.Router();
 
 router.get("/search", search);
 router.post("/upload_file", upload.array("files"), uploadFile);
+router.get("/:roomId", getMessages);
 
 export default router;

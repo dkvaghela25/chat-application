@@ -1,6 +1,16 @@
 import { toast } from "react-toastify";
 import axiosInstance from "../utils/axiosInstance";
 
+export const fetchMessages = async (roomId) => {
+    try {
+        const response = await axiosInstance.get(`/message/${roomId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Fetch Messages Error:", error);
+        throw new Error("Failed to fetch messages");
+    }
+};
+
 export const searchMessage = async (searchInput, roomId) => {
     try {
 
@@ -25,7 +35,7 @@ export const uploadFiles = async (files) => {
 
         const formData = new FormData();
         files.forEach(file => {
-            if(file.size > MAX_SIZE) throw new Error(`File ${file.name} exceeded file size of 2 MB.`)
+            if (file.size > MAX_SIZE) throw new Error(`File ${file.name} exceeded file size of 2 MB.`)
             formData.append("files", file);
         });
 

@@ -3,6 +3,38 @@ import { RequestInputError } from "../../helper/errors.js";
 import { sendError } from "../../helper/sendError.js";
 import { uploadToCloudinary } from "../../helper/uploadToCloudinary.js";
 import { serializeMessage } from "../../helper/serializers.js";
+import Room from "../../models/Room.js";
+import { roomHasMember } from "../../helper/roomHasMembers.js";
+
+export const getMessages = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        if (!roomId) throw new RequestInputError("Room ID is required", 400);
+
+        const requester = req.userId;
+        if (!requester) throw new RequestInputError("User not found", 404);
+
+        const room = await Room.findOne({ roomId })
+            .select("members")
+            .lean();
+        if (!room || !roomHasMember(room, requester)) throw new RequestInputError("Room not found or user is not a member", 404);
+
+        const messages = await Message.find({ roomId })
+            .sort({ createdAt: 1 })
+            .populate("sender", "name username")
+            .lean();
+
+        res.status(200).json({
+            success: true,
+            message: "Messages fetched successfully",
+            messages: messages.map(serializeMessage),
+        });
+
+    } catch (err) {
+        sendError(res, err);
+        console.error("Get Messages Error:", err);
+    }
+};
 
 export const search = async (req, res) => {
     try {
