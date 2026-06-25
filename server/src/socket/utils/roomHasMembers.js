@@ -1,0 +1,1 @@
+export const roomHasMember = (room, userId) => Boolean(room?.members?.some((member) => String(member?._id ?? member) === String(userId)));

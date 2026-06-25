@@ -2,9 +2,10 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
-import { initSocket } from "./socket.js";
 import { connectDB } from "./db.js";
 import apiRouter from "./api/index.js";
+import { initializeSocket } from "./socket/index.js";
+import { socketManager } from "./socket/socketManager.js";
 
 dotenv.config();
 
@@ -22,8 +23,8 @@ app.get("/", (req, res) => {
 
 const server = http.createServer(app);
 
-// Socket init
-initSocket(server);
+const io = initializeSocket(server);
+socketManager(io);
 
 app.use('/api', apiRouter);
 

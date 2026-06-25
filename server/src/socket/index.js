@@ -1,16 +1,23 @@
-import { registerRoomEvents } from "./handlers/room.handler.js";
-import { registerMessageEvents } from "./handlers/message.handler.js";
-import { registerGroupEvents } from "./handlers/group.handler.js";
+import { Server } from "socket.io";
+let io;
 
-io.on("connection", async (socket) => {
- 
-    await handleConnection(socket);
-
-    registerMessageEvents(io, socket);
-    registerRoomEvents(io, socket);
-    registerGroupEvents(io, socket);
-
-    socket.on("disconnect", () => {
-        handleDisconnect(io, socket);
+function initializeSocket(server) {
+    io = new Server(server, {
+        cors: {
+            origin: "*",
+            credentials: true
+        }
     });
-});
+
+    return io;
+}
+
+function getIoInstance() {
+    if (!io) {
+        throw new Error('Socket.IO not initialized');
+    }
+
+    return io;
+}
+
+export { initializeSocket, getIoInstance };
