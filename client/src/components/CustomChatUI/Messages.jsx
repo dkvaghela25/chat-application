@@ -11,7 +11,12 @@ const Messages = ({ highlightedMessageId, displayChat }) => {
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState({});
 
-    const { socket, roomId } = useSocketContext();
+    const { socket, roomId, activeChat, user } = useSocketContext();
+
+    const userId = user?._id;
+    const members = activeChat?.members || [];
+
+    const isActiveChatMember = members.includes(userId);
 
     const getMessages = async () => {
         try {
@@ -27,14 +32,12 @@ const Messages = ({ highlightedMessageId, displayChat }) => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getMessages();
     }, [roomId]);
+    console.log("🚀 ~ Messages ~ messages:", messages)
 
     useEffect(() => {
 
-        const chatHistoryCallback = (data) => {
-            setMessages(data);
-        };
-
         const receiveMessageCallback = (data) => {
+            if (!isActiveChatMember) return;
             setMessages(prev => {
                 if (data.roomId === roomId) {
                     return [...prev, data];
@@ -45,22 +48,21 @@ const Messages = ({ highlightedMessageId, displayChat }) => {
         };
 
         const typingCallBack = (data) => {
+            if (!isActiveChatMember) return;
             if (data.roomId === roomId) {
                 setIsTyping(data);
             }
         };
 
-        socket.on("chatHistory", chatHistoryCallback);
         socket.on("receiveMessage", receiveMessageCallback);
         socket.on("isTyping", typingCallBack);
 
         return () => {
-            socket.off("chatHistory", chatHistoryCallback);
             socket.off("receiveMessage", receiveMessageCallback);
             socket.off("isTyping", typingCallBack);
         };
 
-    }, [socket, roomId]);
+    }, [socket, roomId, messages, isActiveChatMember]);
 
     return (
         <>

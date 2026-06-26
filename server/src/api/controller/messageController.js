@@ -11,15 +11,22 @@ export const getMessages = async (req, res) => {
         const { roomId } = req.params;
         if (!roomId) throw new RequestInputError("Room ID is required", 400);
 
-        const requester = req.userId;
-        if (!requester) throw new RequestInputError("User not found", 404);
+        const userId = req.userId;
+        if (!userId) throw new RequestInputError("User not found", 404);
 
         const room = await Room.findOne({ roomId })
-            .select("members")
+            .select("members removedMembers")
             .lean();
-        if (!room || !roomHasMember(room, requester)) throw new RequestInputError("Room not found or user is not a member", 404);
+        if (!room || !roomHasMember({ room, userId })) throw new RequestInputError("Room not found or user is not a member", 404);
 
-        const messages = await Message.find({ roomId })
+        let removedAtTime = room?.removedMembers?.find((member) => String(member.userId) === String(userId))?.removedAt || new Date();
+
+        const messages = await Message.find({
+            roomId,
+            createdAt: {
+                $lte: removedAtTime,
+            }
+        })
             .sort({ createdAt: 1 })
             .populate("sender", "name username")
             .lean();
@@ -72,7 +79,7 @@ export const uploadFile = async (req, res) => {
         const MAX_SIZE = 2 * 1024 * 1024;
         const uploadedFiles = await Promise.all(
             files.map(async (file) => {
-                if (file.size > MAX_SIZE) throw new Error(`File ${file.originalname} exceeded file size of 2 MB.`)
+                if (file.size > MAX_SIZE) throw new Error(`File ${file.originalname} exceeded file size of 2 MB.`);
                 const result = await uploadToCloudinary(file.buffer);
                 return {
                     url: result.secure_url,
@@ -92,4 +99,4 @@ export const uploadFile = async (req, res) => {
         console.error("Upload Error:", err);
         sendError(res, err);
     }
-}
+};

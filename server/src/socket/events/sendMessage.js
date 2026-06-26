@@ -1,8 +1,8 @@
-import { getIoInstance } from "../index.js";
+import { roomHasMember } from "../../helper/roomHasMembers.js";
 import { serializeMessage } from "../../helper/serializers.js";
 import Message from "../../models/Message.js";
 import Room from "../../models/Room.js";
-import { roomHasMember } from "../utils/roomHasMembers.js";
+import { emitToChat } from "../services/emitService.js";
 
 export const sendMessage = async (socket, payload) => {
     try {
@@ -10,16 +10,16 @@ export const sendMessage = async (socket, payload) => {
         const { roomId, text = "", attachments = [], monaco_editor } = payload;
         if (!roomId) return;
 
-        const senderId = socket.userId;
-        if (!senderId) return;
+        const userId = socket.userId;
+        if (!userId) return;
 
         const room = await Room.findOne({ roomId })
-            .select("members")
+            .select("members removedMembers")
             .lean();
-        if (!room || !roomHasMember(room, senderId)) return;
+        if (!room || !roomHasMember({ room, userId, includeRemoved: false })) return;
 
         const message = await Message.create({
-            sender: senderId,
+            sender: userId,
             roomId,
             text,
             attachments,
@@ -32,8 +32,7 @@ export const sendMessage = async (socket, payload) => {
             .populate("sender", "name username")
             .lean();
 
-        const io = getIoInstance();
-        io.to(roomId).emit("receiveMessage", serializeMessage(populatedMessage));
+        emitToChat(roomId, "receiveMessage", serializeMessage(populatedMessage));
 
     } catch (err) {
         console.error("Send Message Error:", err);

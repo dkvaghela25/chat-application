@@ -24,15 +24,21 @@ const roomSchema = new mongoose.Schema(
             default: false,
         },
 
-        members: {
-            type: [
-                {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "User",
-                },
-            ],
-            default: [],
-        },
+        members: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        }],
+
+        removedMembers: [{
+            userId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            },
+            removedAt: {
+                type: Date,
+                default: Date.now
+            }
+        }]
 
     },
     { timestamps: true }

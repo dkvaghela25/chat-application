@@ -5,12 +5,18 @@ import { IoSend } from "react-icons/io5";
 import { MdOutlineFileDownload } from "react-icons/md";
 import CodeEditor from "./Footer/CodeEditor";
 import Attachment from "./Attachment";
+import { useState } from "react";
 
 const Chat = ({ messages, highlightedMessageId, isTyping }) => {
 
     const messagesEndRef = useRef(null);
-    const { activeChat, user, roomId } = useSocketContext();
+    const { activeChat, user, roomId, socket } = useSocketContext();
     const username = user?.username;
+    const userId = user?._id;
+    const members = activeChat?.members || [];
+
+    const isActiveChatMember = members.includes(userId);
+    const [isActiveChatMemberState, setIsActiveChatMemberState] = useState(isActiveChatMember);
 
     const getSenderUsername = (sender) => typeof sender === "object" ? sender?.username : sender;
 
@@ -28,6 +34,22 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isTyping]);
 
+    useEffect(() => {
+        const handleMemberRemoved = (data) => {
+            console.log("🚀 ~ handleMemberRemoved ~ data:", data)
+
+            if (data.roomId === roomId) {
+                setIsActiveChatMemberState(false);
+            }
+        }
+
+        socket.on("removedFromGroup", handleMemberRemoved);
+
+        return () => {
+            socket.off("removedFromGroup", handleMemberRemoved);
+        };
+    }, []);
+
     return (
         <>
             <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-400 ">
@@ -36,7 +58,7 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                         <div className="bg-slate-100 p-4 rounded-full mb-3">
                             <IoSend className="-rotate-45 opacity-20" size={30} />
                         </div>
-                        <p className="text-sm font-medium">No messages yet</p>
+                        <p className="text-sm font-medium">No messages yet</p      >
                         <p className="text-xs">Start the conversation below</p>
                     </div>
                 ) : (
@@ -94,6 +116,14 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                     })
                 )}
 
+                {!isActiveChatMemberState && (
+                    <div className="flex justify-center">
+                        <div className="px-4 py-2.5 rounded-2xl max-w-[82%] shadow-sm bg-red-100 text-red-400 text-xs italic">
+                            You are no longer a member of this chat. You cannot view other messages.
+                        </div>
+                    </div>
+                )}
+
                 {(isTyping.bool && isTyping.roomId === roomId && isTyping.sender !== username && messages.length !== 0) && (
                     <div className="w-fit">
                         {activeChat?.isGroup && (
@@ -110,7 +140,7 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                 )}
 
                 {messages.length !== 0 && <div ref={messagesEndRef} className="h-0" />}
-            </div>
+            </div >
         </>
     );
 };

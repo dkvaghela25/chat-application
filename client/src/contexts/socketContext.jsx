@@ -8,6 +8,7 @@ export const SocketContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [roomId, setRoomId] = useState();
     const [activeChat, setActiveChat] = useState(null);
+    console.log("🚀 ~ SocketContextProvider ~ activeChat:", activeChat)
 
     const socket = useMemo(() => io(import.meta.env.VITE_SOCKET_URL, {
         autoConnect: false,

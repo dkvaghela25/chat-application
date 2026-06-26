@@ -138,7 +138,7 @@ export const addMember = async (req, res) => {
 
     const room = await Room.findOne(
       { roomId },
-      { adminId: 1, members: 1, roomId: 1 }
+      { adminId: 1, members: 1, roomId: 1, removedMembers: 1 }
     ).lean();
 
     if (!room) {
@@ -188,6 +188,11 @@ export const addMember = async (req, res) => {
         $addToSet: {
           members: { $each: filteredNewMemberIds },
         },
+        $pull: {
+          removedMembers: {
+            userId: { $in: filteredNewMemberIds },
+          },
+        },
       },
       { new: true }
     )
@@ -201,7 +206,9 @@ export const addMember = async (req, res) => {
       });
     }
 
-    const [adminName] = await User.distinct("name", { _id: room.adminId });
+    const [adminName] = await User.distinct("name", {
+      _id: room.adminId,
+    });
 
     for (const member of filteredNewMembers) {
       await Message.create({
@@ -210,6 +217,7 @@ export const addMember = async (req, res) => {
         text: `${adminName} added ${member.name} to the group`,
         type: "notification",
       });
+
       emitToUser(String(member._id), "newGroupCreated", updatedRoom);
     }
 
@@ -240,44 +248,83 @@ export const removeMember = async (req, res) => {
       .populate("members", "name username online")
       .lean();
 
-    if (!room) return;
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found.",
+      });
+    }
 
     const adminUserId = req.userId;
 
-    if (String(room.adminId) !== adminUserId) return;
+    if (String(room.adminId) !== adminUserId) {
+      return res.status(403).json({
+        success: false,
+        message: "Only admin can remove members.",
+      });
+    }
 
-    const memberUser = await User.findOne({ _id: memberId })
-      .select("_id username name")
+    const memberExists = room.members.some(
+      (member) => String(member._id) === memberId
+    );
+
+    if (!memberExists) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not a member of this group.",
+      });
+    }
+
+    const memberUser = await User.findById(memberId)
+      .select("_id name username")
       .lean();
-    if (!memberUser) return;
+
+    if (!memberUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Member not found.",
+      });
+    }
 
     await Room.updateOne(
       { roomId },
-      { $pull: { members: memberId } }
+      {
+        $pull: {
+          members: memberId,
+        },
+        $push: {
+          removedMembers: {
+            userId: memberId,
+            removedAt: new Date(),
+          },
+        },
+      }
     );
 
-    const [adminName] = await User.distinct("name", { _id: adminUserId });
+    const [adminName] = await User.distinct("name", {
+      _id: adminUserId,
+    });
 
     await Message.create({
-      roomId: room.roomId,
+      roomId,
       sender: room.adminId,
       text: `${adminName} removed ${memberUser.name} from the group`,
       type: "notification",
     });
 
-    await emitToUser(req.userId, "memberRemoved", { roomId, memberId });
-    await emitToUser(memberId, "removedFromGroup", { roomId });
+    await emitToUser(adminUserId, "memberRemoved", { roomId, memberId });
+    await emitToUser(memberId, "removedFromGroup", { roomId, removedAt: new Date() });
 
     return res.status(200).json({
       success: true,
-      message: "Member removed successfully."
+      message: "Member removed successfully.",
     });
-
   } catch (err) {
-    console.error("Remove Member Error:", err.message);
+    console.error("Remove Member Error:", err);
+
     return res.status(500).json({
       success: false,
-      message: "Failed to remove member"
+      message: "Failed to remove member",
     });
   }
 };

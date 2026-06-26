@@ -1,18 +1,17 @@
 import Room from "../../models/Room.js";
 import User from "../../models/User.js";
 import { randomUUID } from "crypto";
-import { loadRoom } from "../utils/loadRoom.js";
-import { roomHasMember } from "../utils/roomHasMembers.js";
-import { getIoInstance } from "../index.js";
+import { emitToUser } from "../services/emitService.js";
+import { joinChatRoom } from "../services/roomService.js";
+import { roomHasMember } from "../../helper/roomHasMembers.js";
 
 export const joinRoom = async (socket, payload) => {
     try {
+
         const { receiverId, roomId } = payload;
 
-        const senderId = socket.userId;
-        if (!senderId) return;
-
-        const io = getIoInstance();
+        const userId = socket.userId;
+        if (!userId) return;
 
         let room = null;
 
@@ -24,29 +23,28 @@ export const joinRoom = async (socket, payload) => {
 
             if (!receiverUser) return;
 
-            room = await Room.findOne({ isGroup: false, members: { $all: [senderId, receiverUser._id] } });
+            room = await Room.findOne({ isGroup: false, members: { $all: [userId, receiverUser._id] } });
 
             if (!room) {
                 const directRoomId = `direct_${randomUUID()}`;
                 room = await Room.create({
                     roomId: directRoomId,
-                    members: [senderId, receiverUser._id],
+                    members: [userId, receiverUser._id],
                     isGroup: false,
                 });
-                room = await loadRoom(directRoomId);
-                const senderNewChatMessage = { ...room.members.find((member) => String(member._id) !== String(senderId)), roomId: room.roomId, isGroup: false, userId: receiverId };
-                const receiverNewChatMessage = { ...room.members.find((member) => String(member._id) !== String(receiverId)), roomId: room.roomId, isGroup: false, userId: senderId };
+                room = await Room.findOne({ roomId: directRoomId }).lean();
+                const senderNewChatMessage = { ...room.members.find((member) => String(member._id) !== String(userId)), roomId: room.roomId, isGroup: false, userId: receiverId };
+                const receiverNewChatMessage = { ...room.members.find((member) => String(member._id) !== String(receiverId)), roomId: room.roomId, isGroup: false, userId: userId };
                 socket.emit("newChatStarted", senderNewChatMessage);
-                io.to(`user:${receiverUser._id}`).emit("newChatStarted", receiverNewChatMessage);
+                emitToUser(receiverUser._id, "newChatStarted", receiverNewChatMessage);
             }
         } else if (roomId) {
-            room = await loadRoom(roomId);
+            room = await Room.findOne({ roomId }).lean();
         }
 
-        if (!room || !roomHasMember(room, senderId)) return;
+        if (!room || !roomHasMember({ room, userId })) return;
 
-
-        socket.join(room.roomId);
+        joinChatRoom(socket, room.roomId);
 
         if (room.isGroup) {
             socket.emit("roomJoined", {
@@ -56,7 +54,7 @@ export const joinRoom = async (socket, payload) => {
                 members: room.members,
             });
         } else {
-            const otherUser = room.members.find((member) => String(member._id) !== String(senderId)) || null;
+            const otherUser = room.members.find((member) => String(member._id) !== String(userId)) || null;
             socket.emit("roomJoined", {
                 roomId: room.roomId,
                 isGroup: false,

@@ -147,7 +147,18 @@ export const conversationList = async (req, res) => {
         const { userId } = req;
         if (!userId) return [];
 
-        const rooms = await Room.find({ members: userId })
+        const rooms = await Room.find({
+            $or: [
+                // Active member in any room
+                { members: userId },
+
+                // Removed member only for group chats
+                {
+                    roomId: /^group_/,
+                    "removedMembers.userId": userId,
+                },
+            ],
+        })
             .sort({ updatedAt: -1 })
             .populate("members", "name username online")
             .lean();
@@ -157,20 +168,32 @@ export const conversationList = async (req, res) => {
                 .filter((room) => !room.isGroup)
                 .flatMap((room) => room.members)
                 .map((member) => String(member._id))
-                .filter((memberId) => {
-                    return memberId !== String(userId);
-                })
+                .filter((memberId) => memberId !== String(userId))
         )];
 
-        const directUsers = await User.find({ _id: { $in: directUserIds } })
+        const directUsers = await User.find({
+            _id: { $in: directUserIds },
+        })
             .select("name username online")
             .lean();
-        const directUserMap = new Map(directUsers.map((user) => [String(user._id), user]));
+
+        const directUserMap = new Map(
+            directUsers.map((user) => [String(user._id), user])
+        );
 
         const finalConversationList = rooms
             .map((room) => {
+                const isRemoved =
+                    room.roomId.startsWith("group_") &&
+                    room.removedMembers?.some(
+                        (member) => String(member.userId) === String(userId)
+                    );
+
                 if (room.isGroup) {
-                    return serializeRoom(room, userId);
+                    return {
+                        ...serializeRoom(room, userId),
+                        isRemoved,
+                    };
                 }
 
                 const otherUserId = room.members
@@ -180,17 +203,19 @@ export const conversationList = async (req, res) => {
                 if (!otherUserId) return null;
 
                 const otherUser = directUserMap.get(otherUserId);
+
                 return {
                     _id: room._id,
                     roomId: room.roomId,
                     isGroup: false,
+                    isRemoved: false,
                     name: otherUser?.name || otherUser?.username,
                     userId: otherUserId,
                     username: otherUser?.username || otherUserId,
                     online: Boolean(otherUser?.online),
                 };
             })
-            .filter(Boolean)
+            .filter(Boolean);
 
         return res.status(200).json({
             success: true,
@@ -201,4 +226,4 @@ export const conversationList = async (req, res) => {
     } catch (err) {
         sendError(res, err);
     }
-}
+};

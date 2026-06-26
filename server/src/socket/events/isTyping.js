@@ -1,10 +1,10 @@
-import { getIoInstance } from "../index.js";
+import { emitToChat } from "../services/emitService.js";
 
 export const isTyping = async ({ roomId, bool, sender }) => {
+    
     if (!roomId) return;
-    const io = getIoInstance();
 
-    io.to(roomId).emit("isTyping", {
+    emitToChat(roomId, "isTyping", {
         roomId,
         sender,
         bool,
