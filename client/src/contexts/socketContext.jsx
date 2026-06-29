@@ -8,7 +8,14 @@ export const SocketContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [roomId, setRoomId] = useState();
     const [activeChat, setActiveChat] = useState(null);
-    console.log("🚀 ~ SocketContextProvider ~ activeChat:", activeChat)
+
+    const [isActiveChatMember, setIsActiveChatMember] = useState(false);
+
+    useEffect(() => {
+        if (!activeChat || !user) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsActiveChatMember(activeChat?.isGroup ? activeChat?.members?.some((memberId) => String(memberId) === String(user?._id)) : true);
+    }, [activeChat, user]);
 
     const socket = useMemo(() => io(import.meta.env.VITE_SOCKET_URL, {
         autoConnect: false,
@@ -67,14 +74,22 @@ export const SocketContextProvider = ({ children }) => {
             socket.connect();
         }
 
+        const handleMemberRemoved = (data) => {
+            if (data.roomId === roomId) {
+                setIsActiveChatMember(false);
+            }
+        }
+
         socket.on("roomJoined", onRoomJoined);
         socket.on("userStatusChanged", onStatusChange);
+        socket.on("removedFromGroup", handleMemberRemoved);
 
         return () => {
             socket.off("roomJoined", onRoomJoined);
             socket.off("userStatusChanged", onStatusChange);
+            socket.off("removedFromGroup", handleMemberRemoved);
         };
-    }, [socket, user]);
+    }, [socket, user, isActiveChatMember, roomId]);
 
     const value = {
         user,
@@ -83,6 +98,7 @@ export const SocketContextProvider = ({ children }) => {
         roomId,
         setRoomId,
         activeChat,
+        isActiveChatMember
     };
 
     return (

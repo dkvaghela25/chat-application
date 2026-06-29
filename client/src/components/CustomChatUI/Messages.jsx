@@ -11,12 +11,7 @@ const Messages = ({ highlightedMessageId, displayChat }) => {
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState({});
 
-    const { socket, roomId, activeChat, user } = useSocketContext();
-
-    const userId = user?._id;
-    const members = activeChat?.members || [];
-
-    const isActiveChatMember = members.includes(userId);
+    const { socket, roomId, isActiveChatMember } = useSocketContext();
 
     const getMessages = async () => {
         try {
@@ -32,7 +27,6 @@ const Messages = ({ highlightedMessageId, displayChat }) => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getMessages();
     }, [roomId]);
-    console.log("🚀 ~ Messages ~ messages:", messages)
 
     useEffect(() => {
 

@@ -199,12 +199,14 @@ export const addMember = async (req, res) => {
       .populate("members", "name username online")
       .lean();
 
-    for (const memberId of room.members) {
+    for (const memberId of [...room.members, ...filteredNewMemberIds]) {
       emitToUser(String(memberId), "newMembersAdded", {
         roomId,
         newMembers: filteredNewMembers,
       });
     }
+
+
 
     const [adminName] = await User.distinct("name", {
       _id: room.adminId,
@@ -217,8 +219,6 @@ export const addMember = async (req, res) => {
         text: `${adminName} added ${member.name} to the group`,
         type: "notification",
       });
-
-      emitToUser(String(member._id), "newGroupCreated", updatedRoom);
     }
 
     return res.status(200).json({

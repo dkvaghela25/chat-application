@@ -54,7 +54,8 @@ export const joinRoom = async (socket, payload) => {
                 members: room.members,
             });
         } else {
-            const otherUser = room.members.find((member) => String(member._id) !== String(userId)) || null;
+            const otherUserId = room.members.find((member) => String(member._id) !== String(userId)) || null;
+            const otherUser = await User.findOne({ _id: otherUserId }).select("name username online").lean();
             socket.emit("roomJoined", {
                 roomId: room.roomId,
                 isGroup: false,

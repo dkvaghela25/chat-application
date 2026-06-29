@@ -1,8 +1,8 @@
 import express from "express";
-import authRouter from "./routes/authRoutes.js"
-import userRouter from "./routes/userRoutes.js"
-import roomRouter from "./routes/roomRoutes.js"
-import messageRouter from "./routes/messageRoutes.js"
+import authRouter from "./routes/authRoutes.js";
+import userRouter from "./routes/userRoutes.js";
+import roomRouter from "./routes/roomRoutes.js";
+import messageRouter from "./routes/messageRoutes.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();

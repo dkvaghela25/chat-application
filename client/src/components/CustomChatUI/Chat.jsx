@@ -5,18 +5,12 @@ import { IoSend } from "react-icons/io5";
 import { MdOutlineFileDownload } from "react-icons/md";
 import CodeEditor from "./Footer/CodeEditor";
 import Attachment from "./Attachment";
-import { useState } from "react";
 
 const Chat = ({ messages, highlightedMessageId, isTyping }) => {
 
     const messagesEndRef = useRef(null);
-    const { activeChat, user, roomId, socket } = useSocketContext();
+    const { activeChat, user, roomId, isActiveChatMember } = useSocketContext();
     const username = user?.username;
-    const userId = user?._id;
-    const members = activeChat?.members || [];
-
-    const isActiveChatMember = members.includes(userId);
-    const [isActiveChatMemberState, setIsActiveChatMemberState] = useState(isActiveChatMember);
 
     const getSenderUsername = (sender) => typeof sender === "object" ? sender?.username : sender;
 
@@ -33,22 +27,6 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
         if (!messagesEndRef.current) return;
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isTyping]);
-
-    useEffect(() => {
-        const handleMemberRemoved = (data) => {
-            console.log("🚀 ~ handleMemberRemoved ~ data:", data)
-
-            if (data.roomId === roomId) {
-                setIsActiveChatMemberState(false);
-            }
-        }
-
-        socket.on("removedFromGroup", handleMemberRemoved);
-
-        return () => {
-            socket.off("removedFromGroup", handleMemberRemoved);
-        };
-    }, []);
 
     return (
         <>
@@ -116,7 +94,7 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                     })
                 )}
 
-                {!isActiveChatMemberState && (
+                {!isActiveChatMember && (
                     <div className="flex justify-center">
                         <div className="px-4 py-2.5 rounded-2xl max-w-[82%] shadow-sm bg-red-100 text-red-400 text-xs italic">
                             You are no longer a member of this chat. You cannot view other messages.

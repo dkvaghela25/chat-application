@@ -8,15 +8,10 @@ import Messages from './Messages';
 
 const ActiveChat = () => {
 
-    const { roomId, user, activeChat } = useSocketContext();
+    const { roomId, isActiveChatMember } = useSocketContext();
     const [activeChatDetailsIsOpen, setActiveChatDetailsIsOpen] = useState(false);
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
     const [displayChat, setDisplayChat] = useState(true);
-
-    const userId = user?._id;
-    const members = activeChat?.members || [];
-
-    const isActiveChatMember = members.includes(userId);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
