@@ -58,7 +58,7 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                         <div className="bg-slate-100 p-4 rounded-full mb-3">
                             <IoSend className="-rotate-45 opacity-20" size={30} />
                         </div>
-                        <p className="text-sm font-medium">No messages yet</p      >
+                        <p className="text-sm font-medium">No messages yet</p>
                         <p className="text-xs">Start the conversation below</p>
                     </div>
                 ) : (
