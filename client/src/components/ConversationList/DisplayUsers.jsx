@@ -1,7 +1,7 @@
 import { IoPersonRemoveSharp } from "react-icons/io5";
 import Item from "./Item";
 
-const DisplayUsers = ({ items, handleJoin, handleRemove, loading }) => {
+const DisplayUsers = ({ items, handleJoin, handleRemove, loading, removingId }) => {
 
     if (loading) return (
         Array.from({ length: 5 }).map((_, index) => (
@@ -27,6 +27,7 @@ const DisplayUsers = ({ items, handleJoin, handleRemove, loading }) => {
                     item={item}
                     handleJoin={handleJoin}
                     handleRemove={handleRemove}
+                    removingId={removingId}
                 />
             ))}
 

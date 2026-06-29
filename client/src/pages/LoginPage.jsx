@@ -103,7 +103,11 @@ const LoginPage = () => {
                         {errors.password && <p className='text-xs text-red-500 mt-1 ml-1 font-medium'>{errors.password}</p>}
                     </div>
 
-                    <button className={`cursor-pointer w-full text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-2 ${loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"}`}>
+                    <button 
+                        disabled={loading}
+                        className={`cursor-pointer w-full text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-2 flex items-center justify-center gap-2 ${loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"}`}
+                    >
+                        {loading && <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />}
                         {loading ? "Logging in ..." : "Login"}
                     </button>
 

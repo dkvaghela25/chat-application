@@ -7,13 +7,14 @@ import { toast } from "react-toastify";
 import { addMembersToExistingGroup, createNewGroup } from "../../api/room";
 
 const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => {
-    const { socket, user } = useSocketContext();
+    const { user, joinRoom } = useSocketContext();
     const username = user?.username;
     const userId = user?._id;
 
     const [searchInput, setSearchInput] = useState("");
     const [options, setOptions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [chatType, setChatType] = useState(groupDetails ? "group-chat" : "private-chat");
     const [selectedMembers, setSelectedMembers] = useState([]);
@@ -98,6 +99,7 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
 
     const createGroup = async () => {
         try {
+            setIsSubmitting(true);
             const membersIds = selectedMembers.map(m => m._id);
             const res = await createNewGroup(groupName, membersIds);
             if (res.success) {
@@ -107,11 +109,14 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
             }
         } catch (error) {
             toast.error(error.message);
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
     const addMembersToGroup = async () => {
         try {
+            setIsSubmitting(true);
             const roomId = groupDetails.roomId;
             const newMembersIds = selectedMembers.map(m => m._id);
             const res = await addMembersToExistingGroup(roomId, newMembersIds);
@@ -122,22 +127,25 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
             }
         } catch (error) {
             toast.error(error.message);
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
 
         const memberIds = selectedMembers.map(m => m._id);
 
-        chatType !== "group-chat"
-            ? socket.emit("joinRoom", { receiverId: memberIds[0] })
-            : groupDetails
-                ? addMembersToGroup()
-                : createGroup();
-
-        setIsGroupModalOpen(false);
+        if (chatType !== "group-chat") {
+            joinRoom({ receiverId: memberIds[0] });
+            setIsGroupModalOpen(false);
+        } else if (groupDetails) {
+            await addMembersToGroup();
+        } else {
+            await createGroup();
+        }
     };
 
     return (
@@ -153,11 +161,11 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
 
                     {!groupDetails && <div className="flex gap-5 sm:gap-10">
                         <div className="cursor-pointer flex gap-2">
-                            <input className="accent-indigo-500" name="chat-type" id="private-chat" type="radio" value="private-chat" checked={chatType === "private-chat"} onChange={(e) => setChatType(e.target.value)} />
+                            <input disabled={isSubmitting} className="accent-indigo-500" name="chat-type" id="private-chat" type="radio" value="private-chat" checked={chatType === "private-chat"} onChange={(e) => setChatType(e.target.value)} />
                             <label className="cursor-pointer" htmlFor="private-chat">Private Chat</label>
                         </div>
                         <div className="cursor-pointer flex gap-2">
-                            <input className="accent-indigo-500" name="chat-type" id="group-chat" type="radio" value="group-chat" checked={chatType === "group-chat"} onChange={(e) => setChatType(e.target.value)} />
+                            <input disabled={isSubmitting} className="accent-indigo-500" name="chat-type" id="group-chat" type="radio" value="group-chat" checked={chatType === "group-chat"} onChange={(e) => setChatType(e.target.value)} />
                             <label className="cursor-pointer" htmlFor="group-chat">Group Chat</label>
                         </div>
                     </div>}
@@ -165,7 +173,7 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                     {chatType === "group-chat" && <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Group Name <span className='text-red-500'>*</span></label>
                         <input
-                            disabled={!!groupDetails}
+                            disabled={!!groupDetails || isSubmitting}
                             value={groupName}
                             onChange={(e) => setGroupName(e.target.value)}
                             placeholder="e.g. Project X"
@@ -185,6 +193,7 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                                     : options.map(user => (
                                         <label key={user._id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer group">
                                             <input
+                                                disabled={isSubmitting}
                                                 type={chatType === "group-chat" ? "checkbox" : "radio"}
                                                 checked={selectedMembers.some(m => m._id === user._id)}
                                                 onChange={() => handleSelectedMembersChange(user)}
@@ -206,9 +215,10 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                                 <span key={user._id} className="inline-flex items-center bg-indigo-50 text-indigo-700 text-[11px] font-bold px-2 py-1 rounded-md border border-indigo-100">
                                     {user.name}
                                     <button
+                                        disabled={isSubmitting}
                                         type="button"
                                         onClick={() => handleCheckboxChange(user)}
-                                        className="ml-1.5 hover:text-red-500"
+                                        className="ml-1.5 hover:text-red-500 disabled:opacity-50"
                                     >
                                         x
                                     </button>
@@ -221,11 +231,16 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
                 </div>
 
                 <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-                    <button type="button" onClick={() => setIsGroupModalOpen(false)} className="cursor-pointer border border-slate-300 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800">
+                    <button type="button" disabled={isSubmitting} onClick={() => setIsGroupModalOpen(false)} className="cursor-pointer border border-slate-300 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 disabled:opacity-50">
                         Cancel
                     </button>
-                    <button type="submit" className="cursor-pointer px-6 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 shadow-md transition-all active:scale-95">
-                        {groupDetails ? "Add Members" : "Start Chat"}
+                    <button 
+                        type="submit" 
+                        disabled={isSubmitting} 
+                        className={`cursor-pointer px-6 py-2 text-white text-sm font-bold rounded-lg shadow-md transition-all active:scale-95 flex items-center gap-1.5 ${isSubmitting ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"}`}
+                    >
+                        {isSubmitting && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
+                        {groupDetails ? (isSubmitting ? "Adding..." : "Add Members") : (isSubmitting ? "Starting..." : "Start Chat")}
                     </button>
                 </div>
             </form>

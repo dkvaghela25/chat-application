@@ -223,10 +223,14 @@ const Footer = () => {
                             <Attachment setInputValue={setInputValue} />
                             <button
                                 type="submit"
-                                className={`cursor-pointer p-2 rounded-lg  border-l disabled:cursor-not-allowed disabled:text-slate-400 border-slate-200 pl-3 transition-colors text-slate-700 hover:text-indigo-700`}
+                                className={`cursor-pointer p-2 rounded-lg  border-l disabled:cursor-not-allowed disabled:text-slate-400 border-slate-200 pl-3 transition-colors text-slate-700 hover:text-indigo-700 flex items-center justify-center`}
                                 disabled={isLoading || (!inputValue.text.trim() && !inputValue?.monaco_editor?.code?.trim() && inputValue.attachments.length === 0)}
                             >
-                                <IoSend size={18} />
+                                {isLoading ? (
+                                    <div className="animate-spin rounded-full h-4.5 w-4.5 border-b-2 border-indigo-600" />
+                                ) : (
+                                    <IoSend size={18} />
+                                )}
                             </button>
                         </div>
                     </div>

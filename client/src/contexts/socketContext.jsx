@@ -8,6 +8,7 @@ export const SocketContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [roomId, setRoomId] = useState();
     const [activeChat, setActiveChat] = useState(null);
+    const [loadingRoom, setLoadingRoom] = useState(false);
 
     const [isActiveChatMember, setIsActiveChatMember] = useState(false);
 
@@ -20,6 +21,12 @@ export const SocketContextProvider = ({ children }) => {
     const socket = useMemo(() => io(import.meta.env.VITE_SOCKET_URL, {
         autoConnect: false,
     }), []);
+
+    const joinRoom = (data) => {
+        if (!socket) return;
+        setLoadingRoom(true);
+        socket.emit("joinRoom", data);
+    };
 
     const getUserDetails = async () => {
         try {
@@ -49,11 +56,13 @@ export const SocketContextProvider = ({ children }) => {
 
             if (typeof roomData === "string") {
                 setRoomId(roomData);
+                setLoadingRoom(false);
                 return;
             }
 
             setRoomId(roomData?.roomId);
             setActiveChat(roomData || null);
+            setLoadingRoom(false);
         };
 
         const onStatusChange = (statusData) => {
@@ -80,14 +89,20 @@ export const SocketContextProvider = ({ children }) => {
             }
         }
 
+        const handleDisconnect = () => {
+            setLoadingRoom(false);
+        }
+
         socket.on("roomJoined", onRoomJoined);
         socket.on("userStatusChanged", onStatusChange);
         socket.on("removedFromGroup", handleMemberRemoved);
+        socket.on("disconnect", handleDisconnect);
 
         return () => {
             socket.off("roomJoined", onRoomJoined);
             socket.off("userStatusChanged", onStatusChange);
             socket.off("removedFromGroup", handleMemberRemoved);
+            socket.off("disconnect", handleDisconnect);
         };
     }, [socket, user, isActiveChatMember, roomId]);
 
@@ -98,7 +113,9 @@ export const SocketContextProvider = ({ children }) => {
         roomId,
         setRoomId,
         activeChat,
-        isActiveChatMember
+        isActiveChatMember,
+        loadingRoom,
+        joinRoom
     };
 
     return (

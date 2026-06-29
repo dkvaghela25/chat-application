@@ -2,7 +2,7 @@ import { IoPersonRemoveSharp } from "react-icons/io5";
 import { useSocketContext } from "../../contexts/socketContext";
 import UIAvatar from "../ui/UIAvatar";
 
-const Item = ({ item, handleJoin, handleRemove }) => {
+const Item = ({ item, handleJoin, handleRemove, removingId }) => {
 
     const { user: currentUser } = useSocketContext();
     const username = currentUser?.username;
@@ -43,14 +43,19 @@ const Item = ({ item, handleJoin, handleRemove }) => {
 
             {(handleRemove && item.username !== username) && (
                 <button
+                    disabled={removingId === item._id}
                     onClick={(e) => {
                         e.stopPropagation();
                         handleRemove(item._id);
                     }}
-                    className="p-2.5 cursor-pointer rounded-full text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200 active:scale-90"
+                    className={`p-2.5 cursor-pointer rounded-full transition-all duration-200 active:scale-90 flex items-center justify-center ${removingId === item._id ? 'text-slate-300 bg-transparent cursor-not-allowed' : 'text-slate-400 hover:bg-red-50 hover:text-red-600'}`}
                     title="Remove Member"
                 >
-                    <IoPersonRemoveSharp size={18} />
+                    {removingId === item._id ? (
+                        <div className="animate-spin rounded-full h-4.5 w-4.5 border-b-2 border-slate-400" />
+                    ) : (
+                        <IoPersonRemoveSharp size={18} />
+                    )}
                 </button>
             )}
         </div>

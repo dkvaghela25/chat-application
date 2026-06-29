@@ -16,6 +16,7 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
     const [activeChatDetails, setActiveChatDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+    const [removingMemberId, setRemovingMemberId] = useState(null);
 
     const userId = user?._id;
 
@@ -86,9 +87,12 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
 
     const handleRemove = async (memberId) => {
         try {
+            setRemovingMemberId(memberId);
             await removeMemberFromGroup(roomId, memberId);
         } catch (error) {
             console.error("Error removing member:", error);
+        } finally {
+            setRemovingMemberId(null);
         }
     }
 
@@ -149,7 +153,7 @@ const ActiveChatDetails = ({ setActiveChatDetailsIsOpen }) => {
                             {activeChatDetails.isGroup
                                 ? <>
                                     <div className="flex-1 max-h-90 -ml-5 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-400">
-                                        <DisplayUsers items={activeChatDetails.members} handleRemove={activeChatDetails.adminId === userId ? handleRemove : null} />
+                                        <DisplayUsers items={activeChatDetails.members} handleRemove={activeChatDetails.adminId === userId ? handleRemove : null} removingId={removingMemberId} />
                                     </div>
                                     <DetailItem icon={<BiTime />} label="Created On" value={formatDate(activeChatDetails?.createdAt)} />
                                 </>

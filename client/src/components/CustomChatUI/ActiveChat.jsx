@@ -8,7 +8,7 @@ import Messages from './Messages';
 
 const ActiveChat = () => {
 
-    const { roomId, isActiveChatMember } = useSocketContext();
+    const { roomId, isActiveChatMember, loadingRoom } = useSocketContext();
     const [activeChatDetailsIsOpen, setActiveChatDetailsIsOpen] = useState(false);
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
     const [displayChat, setDisplayChat] = useState(true);
@@ -22,7 +22,12 @@ const ActiveChat = () => {
 
     return (
         <>
-            {!roomId
+            {loadingRoom ? (
+                <div className="flex flex-col w-full h-full mx-auto bg-white/80 backdrop-blur-md border border-slate-200 overflow-hidden shadow-xl items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
+                    <p className="mt-4 text-slate-500 font-semibold animate-pulse">Loading chat...</p>
+                </div>
+            ) : !roomId
                 ? <NothingHere />
                 : activeChatDetailsIsOpen
                     ? <ActiveChatDetails setActiveChatDetailsIsOpen={setActiveChatDetailsIsOpen} />

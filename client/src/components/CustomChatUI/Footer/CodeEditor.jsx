@@ -129,6 +129,12 @@ const CodeEditor = ({ monaco_editor, previewMode = false, setInputValue, setIsCo
                         value={monaco_editor.code}
                         onChange={handleCodeChange}
                         onMount={handleEditorDidMount}
+                        loading={
+                            <div className="flex items-center justify-center py-6 bg-slate-50 text-indigo-600 text-sm font-semibold gap-2">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600" />
+                                Loading Editor...
+                            </div>
+                        }
                         options={{
                             readOnly: previewMode,
                             fontSize: 14,

@@ -42,6 +42,10 @@ const UIAvatar = ({ name, size = "md" }) => {
         }
     }
 
+    if (!name) return <div>
+        
+    </div>;
+
     return (
         <div className={`${generateSize()} rounded-full shrink-0 flex items-center justify-center text-sm`}
             style={{ backgroundColor: `#${bgColor}`, color: `#${textColor}` }}

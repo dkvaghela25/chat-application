@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import UIAvatar from "../ui/UIAvatar";
 
 const ConversationList = () => {
-    const { socket, user } = useSocketContext();
+    const { socket, user, joinRoom } = useSocketContext();
     const searchResultsRef = useRef(null);
     const [searchInput, setSearchInput] = useState("");
     const [searchResults, setSearchResults] = useState([]);
@@ -79,15 +79,13 @@ const ConversationList = () => {
 
     const handleSearchClick = async (user) => {
         console.log("user", user);
-        if (!socket) return console.error("Socket not connected");
-        await socket.emit("joinRoom", { roomId: user.roomId });
+        joinRoom({ roomId: user.roomId });
         setSearchResults([]);
         setSearchInput("");
     };
 
     const handleListClick = (user) => {
-        if (!socket) return console.error("Socket not connected");
-        socket.emit("joinRoom", { roomId: user.roomId });
+        joinRoom({ roomId: user.roomId });
     };
 
     useEffect(() => {
@@ -135,6 +133,7 @@ const ConversationList = () => {
 
     }, [conversationList, socket]);
 
+    console.log("🚀 ~ ConversationList ~ user:", user)
     return (
         <>
             <div className="w-full flex flex-col bg-white/80 backdrop-blur-md border md:border-slate-200 shadow-xl h-full overflow-hidden">
@@ -182,17 +181,29 @@ const ConversationList = () => {
                 </div>
 
                 <footer className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <UIAvatar name={user?.name} userId={user?._id} />
-                        <div className="flex flex-col">
-                            <span className="text-sm font-medium text-slate-700 truncate max-w-30">
-                                {user?.name}
-                            </span>
-                            <span className="text-[12px] font-medium text-slate-500 truncate max-w-30">
-                                @{user?.username}
-                            </span>
+                    {!user
+                        ? <div className="group flex items-center gap-4 rounded-xl transition-all duration-200 animate-pulse">
+                            <div className="relative shrink-0">
+                                <div className="rounded-full w-12 h-12 bg-slate-200" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                    <div className="h-4 w-32 bg-slate-200 rounded-md" />
+                                </div>
+                                <div className="h-3 w-24 bg-slate-200 rounded-md mt-1" />
+                            </div>
                         </div>
-                    </div>
+                        : <div className="flex items-center gap-3">
+                            {user?.name ? <UIAvatar name={user?.name} userId={user?._id} /> : null}
+                            <div className="flex flex-col">
+                                <span className="text-sm font-medium text-slate-700 truncate max-w-30">
+                                    {user?.name}
+                                </span>
+                                <span className="text-[12px] font-medium text-slate-500 truncate max-w-30">
+                                    @{user?.username}
+                                </span>
+                            </div>
+                        </div>}
                     <button
                         onClick={handleLogout}
                         className="cursor-pointer p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 flex items-center justify-center"
