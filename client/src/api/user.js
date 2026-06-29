@@ -6,7 +6,10 @@ export const fetchMe = async () => {
         const response = await axiosInstance.get(`/user/me`);
         return response.data;
     } catch (error) {
-        console.error("Fetch User Details Error:", error);
+        if (error.response && error.response.status === 404 || error.response.status === 401) {
+            localStorage.removeItem("token");
+            window.location.reload();
+        }
         throw new Error("Failed to fetch user details");
     }
 };

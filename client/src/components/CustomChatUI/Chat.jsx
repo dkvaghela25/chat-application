@@ -102,11 +102,11 @@ const Chat = ({ messages, highlightedMessageId, isTyping }) => {
                     </div>
                 )}
 
-                {(isTyping.bool && isTyping.roomId === roomId && isTyping.sender !== username && messages.length !== 0) && (
+                {(isTyping?.bool && isTyping?.roomId === roomId && isTyping?.sender !== username && messages.length !== 0) && (
                     <div className="w-fit">
                         {activeChat?.isGroup && (
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-2">
-                                {isTyping.sender}
+                                {isTyping?.sender}
                             </p>
                         )}
                         <div className="p-4 w-fit flex gap-1 bg-slate-100 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm">

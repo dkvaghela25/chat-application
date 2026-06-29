@@ -15,7 +15,7 @@ const Footer = () => {
 
     const { socket, roomId, user } = useSocketContext();
     const username = user?.username;
-    
+
     const [isLoading, setIsLoading] = useState(false);
     const typingTimeoutRef = useRef(null);
     const isTypingRef = useRef(false);

@@ -133,7 +133,6 @@ const ConversationList = () => {
 
     }, [conversationList, socket]);
 
-    console.log("🚀 ~ ConversationList ~ user:", user)
     return (
         <>
             <div className="w-full flex flex-col bg-white/80 backdrop-blur-md border md:border-slate-200 shadow-xl h-full overflow-hidden">

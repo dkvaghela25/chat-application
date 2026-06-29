@@ -25,7 +25,7 @@ const MessagesSkeleton = () => {
 const Messages = ({ highlightedMessageId, displayChat }) => {
 
     const [messages, setMessages] = useState([]);
-    const [isTyping, setIsTyping] = useState({});
+    const [isTyping, setIsTyping] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const { socket, roomId, isActiveChatMember } = useSocketContext();
@@ -58,7 +58,7 @@ const Messages = ({ highlightedMessageId, displayChat }) => {
                 }
                 return prev;
             });
-            setIsTyping(false);
+            setIsTyping(null);
         };
 
         const typingCallBack = (data) => {
@@ -80,11 +80,11 @@ const Messages = ({ highlightedMessageId, displayChat }) => {
 
     return (
         <>
-            {loading ? (
-                <MessagesSkeleton />
-            ) : displayChat
-                ? <Chat messages={messages} highlightedMessageId={highlightedMessageId} isTyping={isTyping} />
-                : <Attachments messages={messages} />
+            {loading
+                ? <MessagesSkeleton />
+                : displayChat
+                    ? <Chat messages={messages} highlightedMessageId={highlightedMessageId} isTyping={isTyping} />
+                    : <Attachments messages={messages} />
             }
         </>
     );
