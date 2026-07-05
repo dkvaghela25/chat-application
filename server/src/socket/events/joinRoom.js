@@ -32,7 +32,7 @@ export const joinRoom = async (socket, payload) => {
                     members: [userId, receiverUser._id],
                     isGroup: false,
                 });
-                room = await Room.findOne({ roomId: directRoomId }).lean();
+                room = await Room.findOne({ roomId: directRoomId }).populate("members", "name username online").lean();
                 const senderNewChatMessage = { ...room.members.find((member) => String(member._id) !== String(userId)), roomId: room.roomId, isGroup: false, userId: receiverId };
                 const receiverNewChatMessage = { ...room.members.find((member) => String(member._id) !== String(receiverId)), roomId: room.roomId, isGroup: false, userId: userId };
                 socket.emit("newChatStarted", senderNewChatMessage);

@@ -103,6 +103,9 @@ const GroupModal = ({ conversationList, setIsGroupModalOpen, groupDetails }) => 
             const membersIds = selectedMembers.map(m => m._id);
             const res = await createNewGroup(groupName, membersIds);
             if (res.success) {
+                if (res.roomId) {
+                    joinRoom({ roomId: res.roomId });
+                }
                 setIsGroupModalOpen(false);
             } else {
                 toast.error(res.message);

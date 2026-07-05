@@ -10,12 +10,17 @@ export const SocketContextProvider = ({ children }) => {
     const [activeChat, setActiveChat] = useState(null);
     const [loadingRoom, setLoadingRoom] = useState(false);
 
-    const [isActiveChatMember, setIsActiveChatMember] = useState(false);
+    const [isActiveChatMember, setIsActiveChatMember] = useState(true);
+    console.log("🚀 ~ SocketContextProvider ~ isActiveChatMember:", isActiveChatMember)
 
     useEffect(() => {
         if (!activeChat || !user) return;
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsActiveChatMember(activeChat?.isGroup ? activeChat?.members?.some((memberId) => String(memberId) === String(user?._id)) : true);
+        setIsActiveChatMember(activeChat?.isGroup ? activeChat?.members?.some((memberId) => {
+            console.log("🚀 ~ SocketContextProvider ~ user?._id:", user?._id)
+            console.log("🚀 ~ SocketContextProvider ~ activeChat?.members:", memberId)
+            return String(memberId) === String(user?._id);
+        }) : true);
     }, [activeChat, user]);
 
     const socket = useMemo(() => io(import.meta.env.VITE_SOCKET_URL, {

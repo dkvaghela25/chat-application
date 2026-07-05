@@ -81,7 +81,6 @@ export const createGroup = async (req, res) => {
     ]);
 
     const populatedRoom = await Room.findById(room._id)
-      .populate("members", "name username online")
       .lean();
 
     const adminName = admin?.name || "Admin";
@@ -92,6 +91,8 @@ export const createGroup = async (req, res) => {
       ...memberDocs.map(({ name }, index) => ({ ...base, text: `${adminName} added ${name} to the group`, createdAt: new Date(now + index + 1) })),
     ];
     await Message.insertMany(notifications);
+
+    
 
     memberIds.forEach((memberId) => {
       emitToUser(memberId, "newGroupCreated", populatedRoom);
