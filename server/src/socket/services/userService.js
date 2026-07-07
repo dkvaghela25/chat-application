@@ -4,46 +4,67 @@ import { joinUserRoom } from "./roomService.js";
 
 export const markUserAsOnline = async (socket) => {
     try {
-
-        console.log('User Connected : ', socket.id);
+        console.log("User Connected:", socket.id);
 
         const user = await User.findByIdAndUpdate(
             socket.userId,
-            { socketId: socket.id, online: true, },
+            {
+                socketId: socket.id,
+                online: true,
+            },
             { new: true }
         );
 
         if (!user) {
-            socket.disconnect();
+            socket.disconnect(true);
             return;
         }
 
         joinUserRoom(socket, user._id);
 
-        await emitUserStatusToUsers({ userId: user._id, online: true });
+        await emitUserStatusToUsers({
+            userId: user._id,
+            online: true,
+        });
+
     } catch (err) {
-        console.error("Connect Error:", err.message);
+        console.error("Connect Error:", err);
     }
 };
 
 export const markUserAsOffline = async (socket) => {
     try {
+        console.log("User Disconnected:", socket.id);
 
-        console.log('User Disconnected : ', socket.id);
-
+        // Only update if this socket is still the active socket
         const user = await User.findOneAndUpdate(
-            { _id: socket.userId },
-            { online: false },
-            { new: true }
+            {
+                _id: socket.userId,
+                socketId: socket.id
+            },
+            {
+                online: false,
+                socketId: null
+            },
+            {
+                new: true
+            }
         )
-            .select("name username online socketId")
-            .lean();
+        .select("name username online socketId")
+        .lean();
 
-        if (!user?._id) return;
+        // Another socket already connected, so ignore this disconnect
+        if (!user) {
+            console.log("Ignoring stale socket disconnect:", socket.id);
+            return;
+        }
 
-        await emitUserStatusToUsers({ userId: user._id, online: false });
+        await emitUserStatusToUsers({
+            userId: user._id,
+            online: false
+        });
 
     } catch (err) {
-        console.error("Disconnect Error:", err.message);
+        console.error("Disconnect Error:", err);
     }
 };
